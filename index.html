@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz das Pombagiras - FUNCIONAL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ESTILOS SIMPLIFICADOS - FOCAR NA FUNCIONALIDADE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #0A0A0A;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(139, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #C2185B;
+        }
+        
+        h1 {
+            color: #C2185B;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-area {
+            display: none;
+        }
+        
+        .pergunta {
+            font-size: 1.3rem;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .opcoes {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .opcao {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .opcao:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .opcao.selecionada {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #C2185B, #8B0000);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(194, 24, 91, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .resultado {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: rgba(10, 10, 10, 0.9);
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #FFD700;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #C2185B;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #ff4444;
+            padding: 15px;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            color: #00C853;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-crow"></i> Quiz das Pombagiras</h1>
+        <p style="text-align: center; margin-bottom: 30px;">Descubra qual Pombagira rege seus caminhos</p>
+        
+        <!-- Área de Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Carregando quiz...</p>
+        </div>
+        
+        <!-- Área de Erro -->
+        <div class="error" id="error-message" style="display: none;"></div>
+        
+        <!-- Área do Quiz -->
+        <div class="quiz-area" id="quiz-area">
+            <div class="pergunta" id="pergunta-texto">Pergunta aparecerá aqui</div>
+            
+            <div class="opcoes" id="opcoes-container">
+                <!-- Opções serão geradas aqui -->
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="btn-anterior" onclick="perguntaAnterior()" disabled>
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button id="btn-proximo" onclick="proximaPergunta()">
+                    Próxima <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <span id="contador">Pergunta 1 de 12</span>
+                <div style="margin-top: 10px; font-weight: bold; color: #FFD700;">
+                    Pontuação: <span id="score">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Área de Resultado -->
+        <div class="resultado" id="resultado">
+            <!-- Resultado será inserido aqui -->
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO E ESTADO
+        // ============================================
+        const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
+        
+        // Estado do quiz
+        const estado = {
+            perguntas: [],
+            perguntaAtual: 0,
+            score: 0,
+            respostas: [],
+            pombagiras: [],
+            carregando: true
+        };
+
+        // ============================================
+        // FUNÇÕES PRINCIPAIS
+        // ============================================
+        
+        // 1. INICIALIZAR QUIZ
+        async function iniciarQuiz() {
+            console.log("Iniciando quiz...");
+            
+            try {
+                // Primeiro, testar a conexão
+                await testarConexao();
+                
+                // Carregar dados em paralelo
+                await Promise.all([
+                    carregarPombagiras(),
+                    carregarPerguntas()
+                ]);
+                
+                // Se chegou aqui, os dados foram carregados
+                estado.carregando = false;
+                mostrarQuiz();
+                
+            } catch (error) {
+                console.error("Erro ao iniciar quiz:", error);
+                mostrarErro("Erro ao carregar o quiz: " + error.message);
+                // Usar dados de fallback
+                usarDadosFallback();
+                estado.carregando = false;
+                mostrarQuiz();
+            }
+        }
+
+        // 2. TESTAR CONEXÃO
+        async function testarConexao() {
+            console.log("Testando conexão com Supabase...");
+            
+            // Teste simples usando fetch diretamente
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/pombagiras?select=id&limit=1`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            console.log("✅ Conexão com Supabase OK");
+            return true;
+        }
+
+        // 3. CARREGAR POMBAGIRAS
+        async function carregarPombagiras() {
+            console.log("Carregando pombagiras...");
+            
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/pombagiras?select=*`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            
+            const data = await response.json();
+            console.log(`✅ ${data.length} pombagiras carregadas`);
+            estado.pombagiras = data;
+        }
+
+        // 4. CARREGAR PERGUNTAS
+        async function carregarPerguntas() {
+            console.log("Carregando perguntas...");
+            
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/perguntas?select=*`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            
+            const data = await response.json();
+            console.log(`✅ ${data.length} perguntas carregadas`);
+            
+            // Embaralhar e pegar 12 perguntas
+            estado.perguntas = data
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 12);
+        }
+
+        // 5. USAR DADOS FALLBACK (se o Supabase falhar)
+        function usarDadosFallback() {
+            console.log("Usando dados de fallback...");
+            
+            estado.pombagiras = [
+                {
+                    id: 1,
+                    nome: "Maria Padilha",
+                    descricao: "Rainha das Encruzilhadas, senhora do comando e da sedução.",
+                    cores: "Vermelho, Dourado, Preto",
+                    dia_reverencia: "Sexta-feira",
+                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png",
+                    frase_assinatura: "Na encruzilhada do destino, eu comando!"
+                },
+                {
+                    id: 2,
+                    nome: "Maria Mulambo",
+                    descricao: "Pombagira da cura e humildade. Auxilia em processos de limpeza espiritual.",
+                    cores: "Branco, Verde-claro, Cinza",
+                    dia_reverencia: "Segunda-feira",
+                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png",
+                    frase_assinatura: "Na simplicidade encontramos a verdadeira cura!"
+                },
+                {
+                    id: 3,
+                    nome: "Rosa Caveira",
+                    descricao: "Senhora da justiça e transformação. Trabalha com ciclos de vida e morte.",
+                    cores: "Preto, Vermelho-sangue, Roxo",
+                    dia_reverencia: "Sábado",
+                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/rosa_caveira.png",
+                    frase_assinatura: "Onde há injustiça, eu planto a rosa do equilíbrio!"
+                }
+            ];
+            
+            estado.perguntas = [
+                {
+                    id: 1,
+                    pergunta: "Qual dia da semana é consagrado a Maria Padilha?",
+                    nivel_dificuldade: 1,
+                    opcao1: "Segunda-feira",
+                    opcao2: "Quarta-feira",
+                    opcao3: "Sexta-feira",
+                    opcao4: "Domingo",
+                    resposta_correta: 3
+                },
+                {
+                    id: 2,
+                    pergunta: "Maria Mulambo é conhecida principalmente por trabalhar com:",
+                    nivel_dificuldade: 1,
+                    opcao1: "Guerra",
+                    opcao2: "Cura",
+                    opcao3: "Amor",
+                    opcao4: "Dinheiro",
+                    resposta_correta: 2
+                },
+                {
+                    id: 3,
+                    pergunta: "Qual cor NÃO está associada a Maria Padilha?",
+                    nivel_dificuldade: 2,
+                    opcao1: "Vermelho",
+                    opcao2: "Dourado",
+                    opcao3: "Preto",
+                    opcao4: "Azul",
+                    resposta_correta: 4
+                }
+            ];
+            
+            // Se tiver menos de 12 perguntas, duplicar algumas
+            while (estado.perguntas.length < 12) {
+                estado.perguntas.push(...estado.perguntas);
+            }
+            estado.perguntas = estado.perguntas.slice(0, 12);
+        }
+
+        // 6. MOSTRAR QUIZ
+        function mostrarQuiz() {
+            console.log("Mostrando quiz...");
+            
+            // Esconder loading
+            document.getElementById('loading').style.display = 'none';
+            
+            // Mostrar área do quiz
+            document.getElementById('quiz-area').style.display = 'block';
+            
+            // Mostrar primeira pergunta
+            mostrarPerguntaAtual();
+        }
+
+        // 7. MOSTRAR PERGUNTA ATUAL
+        function mostrarPerguntaAtual() {
+            if (estado.perguntaAtual >= estado.perguntas.length) {
+                finalizarQuiz();
+                return;
+            }
+            
+            const pergunta = estado.perguntas[estado.perguntaAtual];
+            
+            // Atualizar texto da pergunta
+            document.getElementById('pergunta-texto').textContent = pergunta.pergunta;
+            
+            // Atualizar contador
+            document.getElementById('contador').textContent = 
+                `Pergunta ${estado.perguntaAtual + 1} de ${estado.perguntas.length}`;
+            
+            // Atualizar score
+            document.getElementById('score').textContent = estado.score;
+            
+            // Criar opções
+            const opcoesContainer = document.getElementById('opcoes-container');
+            opcoesContainer.innerHTML = '';
+            
+            // Limpar seleção anterior
+            estado.respostas[estado.perguntaAtual] = null;
+            
+            // Adicionar opções
+            const opcoes = [
+                pergunta.opcao1,
+                pergunta.opcao2,
+                pergunta.opcao3,
+                pergunta.opcao4
+            ];
+            
+            opcoes.forEach((texto, index) => {
+                const div = document.createElement('div');
+                div.className = 'opcao';
+                div.textContent = `${index + 1}. ${texto}`;
+                div.onclick = () => selecionarOpcao(index);
+                
+                // Se já respondeu esta pergunta, marcar a resposta
+                if (estado.respostas[estado.perguntaAtual] === index) {
+                    div.classList.add('selecionada');
+                }
+                
+                opcoesContainer.appendChild(div);
+            });
+            
+            // Atualizar botões
+            document.getElementById('btn-anterior').disabled = estado.perguntaAtual === 0;
+        }
+
+        // 8. SELECIONAR OPÇÃO
+        function selecionarOpcao(index) {
+            console.log(`Opção selecionada: ${index}`);
+            
+            // Remover seleção de todas as opções
+            const opcoes = document.querySelectorAll('.opcao');
+            opcoes.forEach(op => op.classList.remove('selecionada'));
+            
+            // Selecionar a opção clicada
+            opcoes[index].classList.add('selecionada');
+            
+            // Salvar resposta
+            estado.respostas[estado.perguntaAtual] = index;
+            
+            // Verificar se acertou
+            const pergunta = estado.perguntas[estado.perguntaAtual];
+            const acertou = (index + 1) === pergunta.resposta_correta;
+            
+            if (acertou) {
+                estado.score += pergunta.nivel_dificuldade * 10;
+                document.getElementById('score').textContent = estado.score;
+            }
+        }
+
+        // 9. PERGUNTA ANTERIOR
+        function perguntaAnterior() {
+            if (estado.perguntaAtual > 0) {
+                estado.perguntaAtual--;
+                mostrarPerguntaAtual();
+            }
+        }
+
+        // 10. PRÓXIMA PERGUNTA
+        function proximaPergunta() {
+            // Verificar se respondeu a pergunta atual
+            if (estado.respostas[estado.perguntaAtual] === undefined) {
+                alert("Por favor, selecione uma opção antes de continuar!");
+                return;
+            }
+            
+            estado.perguntaAtual++;
+            
+            if (estado.perguntaAtual < estado.perguntas.length) {
+                mostrarPerguntaAtual();
+            } else {
+                finalizarQuiz();
+            }
+        }
+
+        // 11. FINALIZAR QUIZ
+        function finalizarQuiz() {
+            console.log("Finalizando quiz...");
+            
+            // Esconder quiz
+            document.getElementById('quiz-area').style.display = 'none';
+            
+            // Calcular resultado
+            const resultado = calcularResultado();
+            
+            // Mostrar resultado
+            mostrarResultado(resultado);
+        }
+
+        // 12. CALCULAR RESULTADO
+        function calcularResultado() {
+            // Método simples: escolher pombagira aleatória baseada no score
+            const pontuacaoMaxima = estado.perguntas.length * 50; // 12 perguntas * máximo de pontos
+            const porcentagem = (estado.score / pontuacaoMaxima) * 100;
+            
+            console.log(`Score: ${estado.score}, Porcentagem: ${porcentagem}%`);
+            
+            // Escolher pombagira baseada na porcentagem
+            let index;
+            if (porcentagem >= 80) {
+                // Alta pontuação: pombagiras fortes
+                index = 0; // Maria Padilha
+            } else if (porcentagem >= 50) {
+                // Média pontuação: pombagiras equilibradas
+                index = Math.floor(Math.random() * estado.pombagiras.length);
+            } else {
+                // Baixa pontuação: pombagiras mais suaves
+                index = estado.pombagiras.length - 1; // Última da lista
+            }
+            
+            // Garantir que o index está dentro dos limites
+            index = Math.min(index, estado.pombagiras.length - 1);
+            
+            return estado.pombagiras[index];
+        }
+
+        // 13. MOSTRAR RESULTADO
+        function mostrarResultado(pombagira) {
+            console.log("Mostrando resultado:", pombagira.nome);
+            
+            const resultadoDiv = document.getElementById('resultado');
+            
+            resultadoDiv.innerHTML = `
+                <h2 style="color: #FFD700;">Sua Pombagira Protetora é:</h2>
+                <h1 style="color: #C2185B; margin: 10px 0;">${pombagira.nome}</h1>
+                
+                <img src="${pombagira.imagem_url}" 
+                     alt="${pombagira.nome}" 
+                     style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 5px solid #C2185B; margin: 20px auto; display: block;">
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <p>${pombagira.descricao}</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0;">
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                        <div style="color: #FFD700; font-size: 0.9rem;">Dia de Reverência</div>
+                        <div style="font-size: 1.1rem;">${pombagira.dia_reverencia || 'Não especificado'}</div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                        <div style="color: #FFD700; font-size: 0.9rem;">Cores</div>
+                        <div style="font-size: 1.1rem;">${pombagira.cores || 'Não especificado'}</div>
+                    </div>
+                </div>
+                
+                <div style="font-style: italic; color: #FFD700; padding: 20px; border-top: 2px solid #C2185B; margin-top: 20px;">
+                    <i class="fas fa-quote-left"></i>
+                    ${pombagira.frase_assinatura || 'Que os caminhos se abram para você!'}
+                    <i class="fas fa-quote-right"></i>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <button onclick="reiniciarQuiz()" style="background: linear-gradient(45deg, #4A148C, #C2185B);">
+                        <i class="fas fa-redo"></i> Fazer Quiz Novamente
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; font-weight: bold; color: #FFD700;">
+                    Sua pontuação final: ${estado.score} pontos
+                </div>
+            `;
+            
+            resultadoDiv.style.display = 'block';
+        }
+
+        // 14. REINICIAR QUIZ
+        function reiniciarQuiz() {
+            console.log("Reiniciando quiz...");
+            
+            // Resetar estado
+            estado.perguntaAtual = 0;
+            estado.score = 0;
+            estado.respostas = [];
+            
+            // Embaralhar perguntas novamente
+            estado.perguntas = estado.perguntas
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 12);
+            
+            // Esconder resultado
+            document.getElementById('resultado').style.display = 'none';
+            
+            // Mostrar quiz novamente
+            document.getElementById('quiz-area').style.display = 'block';
+            
+            // Mostrar primeira pergunta
+            mostrarPerguntaAtual();
+        }
+
+        // 15. MOSTRAR ERRO
+        function mostrarErro(mensagem) {
+            console.error("ERRO:", mensagem);
+            
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.innerHTML = `
+                <strong>⚠️ Erro:</strong> ${mensagem}
+                <br><br>
+                <small>Usando dados de demonstração...</small>
+            `;
+            errorDiv.style.display = 'block';
+        }
+
+        // ============================================
+        // INICIAR QUIZ QUANDO A PÁGINA CARREGAR
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM carregado, iniciando quiz...");
+            iniciarQuiz();
+        });
+        
+        // Log para debug
+        console.log("Script carregado com sucesso!");
+    </script>
+</body>
+</html>
