@@ -640,48 +640,34 @@
             
             resultadoDiv.style.display = 'block';
             
-            // SALVAR RESULTADO NO SUPABASE (FUNÇÃO RESTAURADA)
-            await salvarResultadoQuiz(pombagira.id);
+            // Salvar resultado no Supabase
+            await salvarResultado(pombagira.id);
             
             // Atualizar contador após finalização
             await atualizarContador(true);
         }
 
-        // SALVAR RESULTADO DO QUIZ - FUNÇÃO RESTAURADA
-        async function salvarResultadoQuiz(pombagiraId) {
+        // SALVAR RESULTADO NO SUPABASE
+        async function salvarResultado(pombagiraId) {
             try {
-                console.log("💾 Salvando resultado do quiz no Supabase...");
-                
-                const resultadoData = {
-                    session_id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    pombagira_resultado: pombagiraId,
-                    score: estado.pontos,
-                    total_perguntas: estado.perguntas.length,
-                    timestamp: new Date().toISOString()
-                };
-                
-                console.log("📤 Enviando dados:", resultadoData);
-                
-                const response = await fetch(SUPABASE_URL + '/rest/v1/resultados', {
+                await fetch(SUPABASE_URL + '/rest/v1/resultados', {
                     method: 'POST',
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(resultadoData)
+                    body: JSON.stringify({
+                        session_id: 'sessao_' + Date.now(),
+                        pombagira_resultado: pombagiraId,
+                        score: estado.pontos,
+                        timestamp: new Date().toISOString()
+                    })
                 });
                 
-                if (response.ok) {
-                    console.log("✅ Resultado salvo com sucesso no Supabase!");
-                } else {
-                    const errorText = await response.text();
-                    console.warn("⚠️ Erro ao salvar resultado:", errorText);
-                }
-                
+                console.log("✅ Resultado salvo no Supabase");
             } catch (error) {
-                console.warn("⚠️ Não foi possível salvar resultado:", error.message);
+                console.warn("⚠️ Não foi possível salvar resultado");
             }
         }
 
@@ -727,7 +713,6 @@
         // Teste rápido para debug
         console.log("✨ Quiz das Pombagiras carregado!");
         console.log("🔗 Supabase URL:", SUPABASE_URL);
-        console.log("🔑 Supabase Key disponível:", SUPABASE_KEY ? "Sim" : "Não");
     </script>
 </body>
 </html>
