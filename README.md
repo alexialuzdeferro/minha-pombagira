@@ -2,8 +2,8 @@
 
 Um quiz interativo e imersivo com temática gótica e espiritual, dedicado às Pombagiras da Umbanda e Quimbanda. Descubra qual Pombagira é sua rainha através de 15 perguntas misteriosas!
 
-![Quiz das Pombagiras - Screenshot](https://alexialuzdeferro.github.io/minha-pombagira/)  
-*(Adicione uma imagem de preview do quiz se quiser)*
+(https://alexialuzdeferro.github.io/minha-pombagira/)  
+
 
 ## ✨ Características
 
