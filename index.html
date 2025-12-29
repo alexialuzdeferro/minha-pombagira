@@ -775,7 +775,7 @@
             <h1>ORÁCULO DAS 12 POMBAGIRAS</h1>
             <p>Desvende os Mistérios Profundos das Senhoras da Noite</p>
             <p class="subtitulo">
-                <i class="fas fa-moon"></i> Quiz Avançado para Iniciados | 50 Perguntas de Sabedoria Oculta
+                <i class="fas fa-moon"></i> Quiz Dinâmico | 12 de 50 Perguntas Sorteadas por Sessão
             </p>
         </div>
         
@@ -866,7 +866,7 @@
         const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
         
-        // URLs das imagens das Pombagiras
+        // URLs das imagens das Pombagiras (CORRIGIDAS)
         const IMAGENS_POMBAGIRAS = {
             'Maria Padilha': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
             'Maria Mulambo': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png',
@@ -942,12 +942,6 @@
             criarParticulas();
             
             try {
-                // Registrar acesso
-                await registrarAcesso();
-                
-                // Carregar contador
-                await carregarContador();
-                
                 // Carregar dados do quiz
                 await carregarDadosQuiz();
                 
@@ -983,7 +977,7 @@
         }
 
         // ============================================
-        // CONTADOR DE ACESSOS
+        // CONTADOR DE ACESSOS (CORRIGIDO - AGORA CARREGA IMEDIATAMENTE)
         // ============================================
         async function registrarAcesso() {
             try {
@@ -1065,30 +1059,22 @@
                 const cacheTimestamp = localStorage.getItem('quizVisitCountTimestamp');
                 const now = Date.now();
                 
-                if (cachedCount && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 5 * 60 * 1000) {
+                // Mostrar valor do cache imediatamente
+                if (cachedCount) {
                     document.getElementById('acesso-numero').textContent = cachedCount;
-                    console.log("📊 Contador carregado do cache:", cachedCount);
-                    
-                    setTimeout(async () => {
-                        await atualizarContador(true);
-                    }, 1000);
-                    
-                    return;
                 }
                 
-                await atualizarContador(false);
+                // Atualizar em background
+                setTimeout(async () => {
+                    await atualizarContador();
+                }, 500);
                 
             } catch (error) {
                 console.warn("⚠️ Não foi possível carregar contador inicial");
-                
-                const cachedCount = localStorage.getItem('quizVisitCount');
-                if (cachedCount) {
-                    document.getElementById('acesso-numero').textContent = cachedCount + '+';
-                }
             }
         }
 
-        async function atualizarContador(useCacheFallback = false) {
+        async function atualizarContador() {
             try {
                 const response = await fetch(
                     SUPABASE_URL + '/rest/v1/page_views?page=eq.quiz-pombagiras&select=view_count', 
@@ -1118,7 +1104,7 @@
                     } else {
                         console.log("📊 Nenhum registro encontrado, criando...");
                         await registrarAcesso();
-                        await atualizarContador(useCacheFallback);
+                        await atualizarContador();
                     }
                 } else {
                     throw new Error('Resposta não OK do servidor');
@@ -1126,11 +1112,10 @@
             } catch (error) {
                 console.warn("⚠️ Erro ao atualizar contador:", error.message);
                 
-                if (useCacheFallback) {
-                    const cachedCount = localStorage.getItem('quizVisitCount');
-                    if (cachedCount) {
-                        document.getElementById('acesso-numero').textContent = cachedCount + '*';
-                    }
+                // Usar cache como fallback
+                const cachedCount = localStorage.getItem('quizVisitCount');
+                if (cachedCount) {
+                    document.getElementById('acesso-numero').textContent = cachedCount + '*';
                 }
             }
         }
@@ -1162,6 +1147,9 @@
             atualizarMensagemLoading('Consultando o Grimório das 12 Luas...');
             
             try {
+                // Registrar acesso primeiro
+                await registrarAcesso();
+                
                 // Carregar pombagiras
                 const resPombagiras = await fetch(SUPABASE_URL + '/rest/v1/pombagiras?select=*', {
                     headers: {
@@ -1303,7 +1291,7 @@
         }
 
         // ============================================
-        // EXIBIÇÃO DE PERGUNTAS
+        // EXIBIÇÃO DE PERGUNTAS (CORRIGIDO - NAVEGAÇÃO AUTOMÁTICA)
         // ============================================
         function mostrarPerguntaAtual() {
             if (estado.perguntaAtual >= estado.perguntas.length) {
@@ -1378,6 +1366,9 @@
             return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
         }
 
+        // ============================================
+        // FUNÇÃO PRINCIPAL CORRIGIDA - NAVEGAÇÃO AUTOMÁTICA
+        // ============================================
         function selecionarOpcao(index) {
             // Se já selecionou e mostrou resultado, não fazer nada
             if (estado.respostaCorreta !== null) return;
@@ -1420,8 +1411,10 @@
                 
                 estado.respostaCorreta = pergunta.resposta_correta - 1;
                 
-                // Habilitar botão próximo
-                document.getElementById('btn-proximo').disabled = false;
+                // AGORA: Navegação automática após 1.5 segundos
+                setTimeout(() => {
+                    proximaPergunta();
+                }, 1500);
                 
             }, 500);
         }
@@ -1488,9 +1481,6 @@
             
             // Mostrar resultado
             mostrarResultado();
-            
-            // Atualizar contador
-            await atualizarContador(true);
         }
 
         function determinarPombagiraResultado(porcentagem) {
@@ -1686,18 +1676,21 @@
         }
 
         // ============================================
-        // INICIALIZAÇÃO
+        // INICIALIZAÇÃO - CARREGA CONTADOR IMEDIATAMENTE
         // ============================================
         console.log("✨ Quiz Avançado das 12 Pombagiras carregado!");
         console.log("🔗 Supabase conectado");
         console.log("🎨 Interface premium ativa");
         console.log("🎲 Sistema de embaralhamento complexo pronto");
         
-        // Carregar contador inicial
-        carregarContador();
+        // CARREGAR CONTADOR ASSIM QUE A PÁGINA CARREGA
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log("📊 Iniciando contador de acessos...");
+            carregarContador();
+        });
         
         // Atualizar contador periodicamente
-        setInterval(() => atualizarContador(true), 5 * 60 * 1000);
+        setInterval(() => atualizarContador(), 5 * 60 * 1000);
     </script>
 </body>
 </html>
