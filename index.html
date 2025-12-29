@@ -1,1696 +1,526 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUIZ PROFUNDO | 12 Pombagiras</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --sangue: #8b0000;
-            --ouro: #ffd700;
-            --vinho: #4a0404;
-            --roxo-profundo: #2a0a44;
-            --preto-veludo: #0a0a0a;
-            --vermelho-vivo: #c2185b;
-            --dourado-brilhante: #ffcc00;
-            --rosa-poder: #ff1493;
-            --azul-noite: #0d1b2a;
-            --verde-ancestral: #1b4332;
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Crown, Sword, Heart, Moon, Flame, Star } from 'lucide-react';
+
+const PombagiraQuiz = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [isCorrect, setIsCorrect] = useState(null);
+  const [answeredQuestions, setAnsweredQuestions] = useState(0);
+
+  const pombagiras = {
+    'Maria Padilha': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
+      cores: 'Vermelho, Dourado, Preto',
+      dia: 'Sexta-feira',
+      lua: 'Lua Cheia',
+      signos: 'Leão, Escorpião',
+      simbologia: 'Coroa, Cetro, Espelho, Rosas Vermelhas',
+      utensilio: 'Espada, Espelho, Taça de Cristal',
+      mensagem: 'Você carrega a energia do comando e da realeza! Maria Padilha te coroa como líder nata, sedutora e poderosa. Sua presença comanda respeito e admiração.'
+    },
+    'Maria Mulambo': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png',
+      cores: 'Branco, Verde-claro, Cinza',
+      dia: 'Segunda ou Quarta-feira',
+      lua: 'Lua Minguante',
+      signos: 'Virgem, Câncer',
+      simbologia: 'Trapos Limpos, Vasos de Barro, Ervas',
+      utensilio: 'Cesto de Vime, Moringa, Panos Brancos',
+      mensagem: 'Sua alma é pura e compassiva! Maria Mulambo te abençoa com o dom da cura e da humildade. Você encontra beleza na simplicidade e força na resiliência.'
+    },
+    'Maria Quitéria': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_quiteria.png',
+      cores: 'Vermelho, Marrom, Preto',
+      dia: 'Terça-feira',
+      lua: 'Lua Crescente',
+      signos: 'Áries, Escorpião',
+      simbologia: 'Espada, Escudo, Armadura, Bandeira',
+      utensilio: 'Espada, Facão, Bandeira Vermelha',
+      mensagem: 'Você é uma guerreira destemida! Maria Quitéria te protege nas batalhas da vida. Coragem, determinação e proteção são suas maiores armas.'
+    },
+    'Rosa Caveira': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/rosa_caveira.png',
+      cores: 'Preto, Vermelho-sangue, Roxo',
+      dia: 'Sábado',
+      lua: 'Lua Nova ou Cheia',
+      signos: 'Escorpião, Plutão',
+      simbologia: 'Caveira, Rosa, Balança, Foice',
+      utensilio: 'Foice, Espelho Preto, Rosário de Ossos',
+      mensagem: 'Você compreende os ciclos da vida e morte! Rosa Caveira te guia na transformação e justiça. Sua intensidade é poder puro e verdade absoluta.'
+    },
+    'Dama da Noite': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/dama_noite.png',
+      cores: 'Preto, Roxo, Azul-escuro',
+      dia: 'Sexta-feira (noite)',
+      lua: 'Lua Negra',
+      signos: 'Escorpião, Peixes',
+      simbologia: 'Lua Crescente, Olho, Chave, Morcego',
+      utensilio: 'Chave, Espelho Negro, Livro de Segredos',
+      mensagem: 'Os mistérios do universo sussurram em seus ouvidos! Dama da Noite te revela o oculto. Você enxerga além do véu e guarda segredos profundos.'
+    },
+    'Sete Saias': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/sete_saias.png',
+      cores: 'Multicolorido (Vermelho, Rosa, Amarelo)',
+      dia: 'Quinta ou Domingo',
+      lua: 'Lua Crescente ou Cheia',
+      signos: 'Sagitário, Leão',
+      simbologia: 'Saias Coloridas, Tambor, Máscara',
+      utensilio: 'Tambor, Leque, Fitas Coloridas',
+      mensagem: 'Alegria é sua essência! Sete Saias dança em sua vida trazendo movimento e paixão. Você irradia vida, cor e intensidade contagiante.'
+    },
+    'Pombagira Cigana': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/cigana.png',
+      cores: 'Vermelho, Dourado, Verde',
+      dia: 'Quarta-feira',
+      lua: 'Lua Cheia',
+      signos: 'Sagitário, Touro',
+      simbologia: 'Carruagem, Cartas, Cristais, Rodas',
+      utensilio: 'Baralho Cigano, Sinos, Moedas',
+      mensagem: 'Liberdade corre em suas veias! Pombagira Cigana te abençoa com prosperidade e independência. Você não conhece correntes, apenas horizontes.'
+    },
+    'Maria Navalha': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_navalha.png',
+      cores: 'Preto, Vermelho, Prata',
+      dia: 'Terça ou Sexta-feira (noite)',
+      lua: 'Lua Minguante',
+      signos: 'Escorpião, Gêmeos',
+      simbologia: 'Navalha, Chave, Carta de Baralho',
+      utensilio: 'Navalha, Dado, Lenço Vermelho',
+      mensagem: 'A malandragem é sua sabedoria! Maria Navalha te protege nas ruas da vida. Astúcia, adaptação e proteção são suas companheiras fiéis.'
+    },
+    'Pombagira da Praia': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/praia.png',
+      cores: 'Azul, Branco, Prata',
+      dia: 'Quinta ou Segunda-feira',
+      lua: 'Lua Cheia ou Crescente',
+      signos: 'Câncer, Peixes',
+      simbologia: 'Concha, Onda, Pérola, Rede',
+      utensilio: 'Concha, Jarro com Água do Mar, Leque',
+      mensagem: 'Suas emoções são mar profundo! Pombagira da Praia te purifica e renova. Você compreende as marés do coração e traz calma aos tormentos.'
+    },
+    'Maria Farrapo': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_farrapo.png',
+      cores: 'Branco Sujo, Cinza, Lilás',
+      dia: 'Segunda-feira',
+      lua: 'Lua Minguante',
+      signos: 'Virgem, Peixes',
+      simbologia: 'Pano Rasgado, Nó, Labirinto',
+      utensilio: 'Pano Branco, Cordão com Nós, Incenso de Lavanda',
+      mensagem: 'Você compreende o caos e dele tira ordem! Maria Farrapo te cura profundamente. Das ruínas mentais, você ergue clareza e sanidade.'
+    },
+    'Pombagira Menina': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/menina.png',
+      cores: 'Rosa, Branco, Azul-claro',
+      dia: 'Domingo',
+      lua: 'Lua Nova',
+      signos: 'Áries, Libra',
+      simbologia: 'Boneca, Flor, Borboleta, Sino',
+      utensilio: 'Boneca, Sino, Balão',
+      mensagem: 'Renovação é seu presente! Pombagira Menina te abençoa com recomeços. Inocência e sabedoria ancestral se unem em você para trazer esperança.'
+    },
+    'Pombagira da Figueira': {
+      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/figueira.png',
+      cores: 'Marrom, Verde-escuro, Preto',
+      dia: 'Sábado',
+      lua: 'Lua Minguante',
+      signos: 'Touro, Capricórnio',
+      simbologia: 'Raízes, Árvore, Semente, Vasos de Barro',
+      utensilio: 'Vaso de Barro, Sementes, Enxada',
+      mensagem: 'Suas raízes são profundas e fortes! Pombagira da Figueira te conecta aos ancestrais. Você é a ponte entre passado e presente, tradição viva.'
+    }
+  };
+
+  const questions = [
+    {
+      question: "Qual Pombagira é sincretizada com a Rainha de Sabá e Maria Madalena?",
+      options: ["Maria Mulambo", "Maria Padilha", "Sete Saias", "Pombagira Cigana"],
+      correct: "Maria Padilha",
+      pombagira: "Maria Padilha"
+    },
+    {
+      question: "Qual entidade tem como utensílio principal o espelho negro e a chave?",
+      options: ["Rosa Caveira", "Dama da Noite", "Maria Navalha", "Maria Farrapo"],
+      correct: "Dama da Noite",
+      pombagira: "Dama da Noite"
+    },
+    {
+      question: "Em que fase da lua Maria Mulambo atua com maior poder de cura?",
+      options: ["Lua Cheia", "Lua Nova", "Lua Minguante", "Lua Crescente"],
+      correct: "Lua Minguante",
+      pombagira: "Maria Mulambo"
+    },
+    {
+      question: "Qual Pombagira é invocada especificamente para batalhas espirituais e proteção guerreira?",
+      options: ["Maria Padilha", "Maria Quitéria", "Maria Navalha", "Rosa Caveira"],
+      correct: "Maria Quitéria",
+      pombagira: "Maria Quitéria"
+    },
+    {
+      question: "Que utensílio é característico de Rosa Caveira e simboliza transformação?",
+      options: ["Espada", "Foice", "Navalha", "Tridente"],
+      correct: "Foice",
+      pombagira: "Rosa Caveira"
+    },
+    {
+      question: "Qual é o dia propício para reverenciar a Pombagira Cigana?",
+      options: ["Segunda-feira", "Terça-feira", "Quarta-feira", "Sexta-feira"],
+      correct: "Quarta-feira",
+      pombagira: "Pombagira Cigana"
+    },
+    {
+      question: "Quantas saias usa a Pombagira da alegria e intensidade?",
+      options: ["Três", "Cinco", "Sete", "Nove"],
+      correct: "Sete",
+      pombagira: "Sete Saias"
+    },
+    {
+      question: "Qual Pombagira tem como locais de oferenda hospitais psiquiátricos e encruzilhadas silenciosas?",
+      options: ["Maria Mulambo", "Maria Farrapo", "Pombagira Menina", "Pombagira da Praia"],
+      correct: "Maria Farrapo",
+      pombagira: "Maria Farrapo"
+    },
+    {
+      question: "Que símbolos são associados à Pombagira da Praia?",
+      options: ["Caveira e rosa", "Concha e onda", "Navalha e dado", "Coroa e cetro"],
+      correct: "Concha e onda",
+      pombagira: "Pombagira da Praia"
+    },
+    {
+      question: "Qual entidade trabalha com a energia de renovação e inocência?",
+      options: ["Maria Mulambo", "Pombagira Menina", "Sete Saias", "Maria Farrapo"],
+      correct: "Pombagira Menina",
+      pombagira: "Pombagira Menina"
+    },
+    {
+      question: "Em que fase lunar a Dama da Noite atinge seu mistério máximo?",
+      options: ["Lua Cheia", "Lua Nova", "Lua Negra", "Lua Crescente"],
+      correct: "Lua Negra",
+      pombagira: "Dama da Noite"
+    },
+    {
+      question: "Qual Pombagira é associada aos signos de Touro e Capricórnio?",
+      options: ["Maria Padilha", "Pombagira Cigana", "Pombagira da Figueira", "Maria Quitéria"],
+      correct: "Pombagira da Figueira",
+      pombagira: "Pombagira da Figueira"
+    },
+    {
+      question: "Que cor NÃO é típica de Maria Navalha?",
+      options: ["Preto", "Vermelho", "Prata", "Dourado"],
+      correct: "Dourado",
+      pombagira: "Maria Navalha"
+    },
+    {
+      question: "Qual entidade tem como simbologia principal raízes, árvore e sementes?",
+      options: ["Maria Mulambo", "Pombagira da Figueira", "Maria Farrapo", "Pombagira da Praia"],
+      correct: "Pombagira da Figueira",
+      pombagira: "Pombagira da Figueira"
+    },
+    {
+      question: "Qual Pombagira trabalha especificamente com cemitérios e energia de justiça implacável?",
+      options: ["Dama da Noite", "Rosa Caveira", "Maria Quitéria", "Maria Navalha"],
+      correct: "Rosa Caveira",
+      pombagira: "Rosa Caveira"
+    }
+  ];
+
+  const playSound = (isCorrect) => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = isCorrect ? 800 : 400;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  };
+
+  const handleAnswer = (answer) => {
+    const correct = answer === questions[currentQuestion].correct;
+    setSelectedAnswer(answer);
+    setIsCorrect(correct);
+    playSound(correct);
+
+    if (correct) {
+      const pombagiraName = questions[currentQuestion].pombagira;
+      setScore(prev => ({
+        ...prev,
+        [pombagiraName]: (prev[pombagiraName] || 0) + 1
+      }));
+    }
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+        setIsCorrect(null);
+        setAnsweredQuestions(answeredQuestions + 1);
+      } else {
+        setShowResult(true);
+      }
+    }, 1500);
+  };
+
+  const getQueenPombagira = () => {
+    let maxScore = 0;
+    let queen = 'Maria Padilha';
+    
+    Object.entries(score).forEach(([name, points]) => {
+      if (points > maxScore) {
+        maxScore = points;
+        queen = name;
+      }
+    });
+    
+    return queen;
+  };
+
+  if (showResult) {
+    const queen = getQueenPombagira();
+    const queenData = pombagiras[queen];
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-red-900 to-black p-4 flex items-center justify-center">
+        <div className="max-w-2xl w-full">
+          <div className="bg-gradient-to-br from-purple-800/40 to-red-800/40 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-yellow-500/50 p-8 animate-pulse-slow">
+            <div className="flex justify-center mb-6">
+              <Crown className="w-16 h-16 text-yellow-400 animate-bounce" />
+            </div>
+            
+            <h1 className="text-4xl font-bold text-center text-yellow-400 mb-4 drop-shadow-lg">
+              Sua Pombagira Rainha!
+            </h1>
+            
+            <div className="bg-black/50 rounded-2xl p-6 mb-6 border-2 border-red-500/50">
+              <img 
+                src={queenData.image} 
+                alt={queen}
+                className="w-full h-64 object-contain mb-4 drop-shadow-2xl"
+              />
+              <h2 className="text-3xl font-bold text-center text-red-400 mb-4">
+                {queen}
+              </h2>
+            </div>
+
+            <div className="space-y-4 bg-black/30 rounded-xl p-6 border border-yellow-500/30">
+              <div className="flex items-start gap-3">
+                <Flame className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Cores:</p>
+                  <p className="text-white">{queenData.cores}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Moon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Lua:</p>
+                  <p className="text-white">{queenData.lua}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Star className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Dia Propício:</p>
+                  <p className="text-white">{queenData.dia}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Signos:</p>
+                  <p className="text-white">{queenData.signos}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Crown className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Simbologia:</p>
+                  <p className="text-white">{queenData.simbologia}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Sword className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="text-yellow-300 font-semibold">Utensílios:</p>
+                  <p className="text-white">{queenData.utensilio}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 bg-gradient-to-r from-red-900/50 to-purple-900/50 rounded-xl p-6 border-2 border-yellow-400/50">
+              <Heart className="w-8 h-8 text-red-400 mx-auto mb-3" />
+              <p className="text-white text-center italic leading-relaxed">
+                {queenData.mensagem}
+              </p>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-yellow-300 text-lg font-semibold mb-2">
+                Você acertou {Object.values(score).reduce((a, b) => a + b, 0)} de 15 perguntas
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-gradient-to-r from-red-600 to-purple-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg"
+              >
+                Refazer Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-red-900 p-4 flex items-center justify-center">
+      <div className="max-w-3xl w-full">
+        <div className="bg-gradient-to-br from-purple-800/30 to-red-800/30 backdrop-blur-md rounded-3xl shadow-2xl border border-purple-500/50 overflow-hidden">
+          
+          {/* Header */}
+          <div className="bg-gradient-to-r from-red-600 to-purple-600 p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-6 h-6 text-yellow-400 animate-pulse" />
+                  <span className="text-white font-bold text-lg">
+                    Pergunta {currentQuestion + 1}/{questions.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Crown className="w-6 h-6 text-yellow-400" />
+                  <span className="text-white font-bold">
+                    {answeredQuestions} acertos
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-white/20 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-yellow-400 to-red-400 h-full transition-all duration-500 ease-out"
+                  style={{width: `${((currentQuestion + 1) / questions.length) * 100}%`}}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Question */}
+          <div className="p-8">
+            <div className="bg-black/40 rounded-2xl p-6 mb-8 border-2 border-purple-500/50 shadow-xl">
+              <div className="flex justify-center mb-4">
+                <Sparkles className="w-10 h-10 text-yellow-400 animate-spin-slow" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white text-center leading-relaxed">
+                {questions[currentQuestion].question}
+              </h2>
+            </div>
+
+            {/* Options */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {questions[currentQuestion].options.map((option, index) => {
+                let bgColor = 'bg-gradient-to-r from-purple-600/50 to-red-600/50 hover:from-purple-500/70 hover:to-red-500/70';
+                let borderColor = 'border-purple-400/50';
+                let transform = 'hover:scale-105';
+
+                if (selectedAnswer === option) {
+                  if (isCorrect) {
+                    bgColor = 'bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse';
+                    borderColor = 'border-green-400';
+                    transform = 'scale-105';
+                  } else {
+                    bgColor = 'bg-gradient-to-r from-red-600 to-red-800 animate-shake';
+                    borderColor = 'border-red-400';
+                    transform = 'scale-95';
+                  }
+                }
+
+                if (selectedAnswer && option === questions[currentQuestion].correct && !isCorrect) {
+                  bgColor = 'bg-gradient-to-r from-green-500 to-emerald-600';
+                  borderColor = 'border-green-400';
+                }
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !selectedAnswer && handleAnswer(option)}
+                    disabled={selectedAnswer !== null}
+                    className={`${bgColor} ${transform} border-2 ${borderColor} text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg disabled:cursor-not-allowed backdrop-blur-sm`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedAnswer && (
+              <div className="mt-6 text-center">
+                <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full ${isCorrect ? 'bg-green-500/30' : 'bg-red-500/30'} border-2 ${isCorrect ? 'border-green-400' : 'border-red-400'}`}>
+                  {isCorrect ? (
+                    <>
+                      <Sparkles className="w-6 h-6 text-green-400 animate-spin" />
+                      <span className="text-green-200 font-bold text-xl">Correto! ✨</span>
+                    </>
+                  ) : (
+                    <>
+                      <Flame className="w-6 h-6 text-red-400" />
+                      <span className="text-red-200 font-bold text-xl">Incorreto! 🔥</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="mt-6 text-center">
+          <p className="text-yellow-300 text-sm font-semibold flex items-center justify-center gap-2">
+            <Moon className="w-5 h-5 animate-pulse" />
+            Descubra qual Pombagira reina em seu caminho
+            <Star className="w-5 h-5 animate-pulse" />
+          </p>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        .animate-spin-slow {
+          animation: spin-slow 3s linear infinite;
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--preto-veludo) 0%, var(--roxo-profundo) 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 20, 147, 0.08) 0%, transparent 50%);
-            z-index: -1;
-            animation: pulseBackground 20s ease-in-out infinite alternate;
-        }
-        
-        @keyframes pulseBackground {
-            0% { opacity: 0.5; }
-            100% { opacity: 0.8; }
-        }
-        
-        .container { 
-            max-width: 900px; 
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* HEADER DRAMÁTICO */
-        .header {
-            text-align: center;
-            padding: 40px 30px;
-            background: rgba(10, 10, 10, 0.7);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            border: 3px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
-                        inset 0 0 0 1px rgba(255, 215, 0, 0.2);
-            animation: borderGlow 3s infinite alternate;
-        }
-        
-        @keyframes borderGlow {
-            0% { 
-                border-color: rgba(139, 0, 0, 0.3);
-                box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3),
-                            inset 0 0 0 1px rgba(255, 215, 0, 0.2);
-            }
-            100% { 
-                border-color: rgba(255, 215, 0, 0.5);
-                box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2),
-                            inset 0 0 0 1px rgba(255, 20, 147, 0.3);
-            }
-        }
-        
-        .header h1 {
-            color: var(--dourado-brilhante);
-            margin-bottom: 15px;
-            font-size: 3.2rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5),
-                         0 0 20px rgba(139, 0, 0, 0.3);
-            animation: titleGlow 2s ease-in-out infinite alternate;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--dourado-brilhante), var(--rosa-poder));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        @keyframes titleGlow {
-            0% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(139, 0, 0, 0.3); }
-            100% { text-shadow: 0 0 15px rgba(255, 20, 147, 0.6), 0 0 25px rgba(255, 215, 0, 0.4); }
-        }
-        
-        .header p {
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 1.3rem;
-            font-style: italic;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        .header .subtitulo {
-            color: var(--ouro);
-            font-size: 1.1rem;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        /* BOTÃO DE INÍCIO */
-        .iniciar-container {
-            text-align: center;
-            margin: 40px 0;
-        }
-        
-        .btn-iniciar {
-            background: linear-gradient(45deg, var(--sangue), var(--vermelho-vivo));
-            color: white;
-            border: none;
-            padding: 20px 50px;
-            border-radius: 50px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(194, 24, 91, 0.4);
-        }
-        
-        .btn-iniciar:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(194, 24, 91, 0.6);
-            background: linear-gradient(45deg, var(--vermelho-vivo), var(--sangue));
-        }
-        
-        .btn-iniciar:active {
-            transform: translateY(-2px) scale(1.02);
-        }
-        
-        .btn-iniciar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.7s;
-        }
-        
-        .btn-iniciar:hover::after {
-            left: 100%;
-        }
-        
-        /* QUIZ BOX - PERGUNTAS */
-        .quiz-box {
-            background: rgba(20, 20, 20, 0.85);
-            padding: 35px;
-            border-radius: 20px;
-            border: 2px solid rgba(255, 215, 0, 0.2);
-            margin-bottom: 25px;
-            display: none;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.6s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .pergunta-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-        }
-        
-        .dificuldade {
-            background: rgba(255, 215, 0, 0.15);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: var(--ouro);
-            font-weight: bold;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        
-        .pergunta {
-            font-size: 1.5rem;
-            margin-bottom: 35px;
-            line-height: 1.6;
-            color: #ffffff;
-            font-weight: 500;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border-left: 4px solid var(--rosa-poder);
-        }
-        
-        .opcoes { 
-            display: grid; 
-            gap: 15px; 
-            margin: 30px 0; 
-        }
-        
-        .opcao {
-            background: rgba(40, 40, 40, 0.7);
-            padding: 22px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid transparent;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .opcao::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--ouro);
-            transform: scaleY(0);
-            transition: transform 0.3s;
-        }
-        
-        .opcao:hover {
-            background: rgba(60, 60, 60, 0.9);
-            transform: translateX(5px);
-            border-color: rgba(255, 215, 0, 0.3);
-        }
-        
-        .opcao:hover::before {
-            transform: scaleY(1);
-        }
-        
-        .opcao-numero {
-            background: rgba(255, 215, 0, 0.2);
-            color: var(--ouro);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        
-        .opcao.selecionada {
-            background: rgba(30, 60, 30, 0.7);
-            border-color: #4CAF50;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
-        }
-        
-        .opcao.selecionada .opcao-numero {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .opcao.selecionada::before {
-            background: #4CAF50;
-            transform: scaleY(1);
-        }
-        
-        .opcao.errada {
-            background: rgba(100, 30, 30, 0.7);
-            border-color: #f44336;
-            animation: shake 0.5s;
-        }
-        
-        .opcao.errada .opcao-numero {
-            background: #f44336;
-            color: white;
-        }
-        
-        .opcao.errada::before {
-            background: #f44336;
-            transform: scaleY(1);
-        }
-        
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-10px); }
+          75% { transform: translateX(10px); }
         }
-        
-        .opcao.correta {
-            background: rgba(30, 70, 30, 0.7);
-            border-color: #4CAF50;
-            animation: pulseCorrect 0.5s;
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
         }
-        
-        .opcao.correta .opcao-numero {
-            background: #4CAF50;
-            color: white;
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.9; transform: scale(1.02); }
         }
-        
-        .opcao.correta::before {
-            background: #4CAF50;
-            transform: scaleY(1);
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
         }
-        
-        @keyframes pulseCorrect {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        
-        .btn-proximo {
-            background: linear-gradient(45deg, var(--roxo-profundo), var(--sangue));
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-proximo:hover:not(:disabled) {
-            background: linear-gradient(45deg, var(--sangue), var(--roxo-profundo));
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(139, 0, 0, 0.4);
-        }
-        
-        .btn-proximo:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .progresso-container {
-            margin-top: 25px;
-            text-align: center;
-        }
-        
-        .barra-progresso {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        
-        .progresso {
-            height: 100%;
-            background: linear-gradient(90deg, var(--sangue), var(--rosa-poder));
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 4px;
-        }
-        
-        .contador-quiz {
-            display: flex;
-            justify-content: space-between;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.95rem;
-        }
-        
-        /* RESULTADO - REVELAÇÃO DRAMÁTICA */
-        .resultado {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(42, 10, 68, 0.95));
-            padding: 40px;
-            border-radius: 25px;
-            border: 3px solid transparent;
-            display: none;
-            text-align: center;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
-            animation: revealResult 1s ease-out;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        @keyframes revealResult {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        .resultado::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--sangue), var(--ouro), var(--rosa-poder));
-            animation: rainbowBorder 3s linear infinite;
-        }
-        
-        @keyframes rainbowBorder {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-        
-        .titulo-resultado {
-            color: var(--dourado-brilhante);
-            margin-bottom: 15px;
-            font-size: 2.2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-        
-        .nome-pombagira {
-            color: var(--rosa-poder);
-            font-size: 3.5rem;
-            margin: 20px 0;
-            font-weight: 900;
-            text-shadow: 0 0 15px rgba(255, 20, 147, 0.6);
-            animation: glowName 2s ease-in-out infinite alternate;
-            background: linear-gradient(45deg, var(--rosa-poder), var(--dourado-brilhante));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        @keyframes glowName {
-            0% { text-shadow: 0 0 10px rgba(255, 20, 147, 0.6); }
-            100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.7), 0 0 30px rgba(255, 20, 147, 0.5); }
-        }
-        
-        .imagem-pombagira-container {
-            width: 280px;
-            height: 280px;
-            margin: 25px auto;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 5px solid transparent;
-            background: linear-gradient(45deg, var(--sangue), var(--ouro), var(--rosa-poder)) border-box;
-            padding: 5px;
-            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
-            animation: floatImage 6s ease-in-out infinite;
-        }
-        
-        @keyframes floatImage {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .imagem-pombagira {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        
-        .frase-pombagira {
-            font-size: 1.5rem;
-            color: var(--ouro);
-            font-style: italic;
-            margin: 25px 0;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            border-left: 4px solid var(--rosa-poder);
-            position: relative;
-            line-height: 1.6;
-        }
-        
-        .frase-pombagira::before {
-            content: '"';
-            font-size: 4rem;
-            color: rgba(255, 215, 0, 0.3);
-            position: absolute;
-            top: -15px;
-            left: 15px;
-        }
-        
-        .frase-pombagira::after {
-            content: '"';
-            font-size: 4rem;
-            color: rgba(255, 215, 0, 0.3);
-            position: absolute;
-            bottom: -35px;
-            right: 15px;
-        }
-        
-        .detalhes-pombagira {
-            background: rgba(30, 30, 30, 0.7);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 25px 0;
-            text-align: left;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        
-        .detalhes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .detalhe-item {
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            border-left: 3px solid var(--rosa-poder);
-        }
-        
-        .detalhe-label {
-            color: var(--ouro);
-            font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .detalhe-valor {
-            color: #ffffff;
-            font-size: 1.05rem;
-        }
-        
-        .pontuacao-final {
-            font-size: 1.4rem;
-            color: var(--dourado-brilhante);
-            margin: 25px 0;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            display: inline-block;
-        }
-        
-        .acoes-resultado {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-acao {
-            padding: 16px 35px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-width: 200px;
-            font-size: 1.1rem;
-            border: 2px solid transparent;
-        }
-        
-        .btn-reiniciar {
-            background: linear-gradient(45deg, var(--sangue), var(--vermelho-vivo));
-            color: white;
-        }
-        
-        .btn-reiniciar:hover {
-            background: linear-gradient(45deg, var(--vermelho-vivo), var(--sangue));
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(194, 24, 91, 0.4);
-        }
-        
-        .btn-compartilhar {
-            background: linear-gradient(45deg, var(--roxo-profundo), #6a11cb);
-            color: white;
-        }
-        
-        .btn-compartilhar:hover {
-            background: linear-gradient(45deg, #6a11cb, var(--roxo-profundo));
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(106, 17, 203, 0.4);
-        }
-        
-        /* CONTADOR DE VISITAS */
-        .contador-acessos {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(10px);
-            color: var(--ouro);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-            opacity: 0.7;
-            transition: all 0.3s;
-            z-index: 1000;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 160px;
-        }
-        
-        .contador-acessos:hover {
-            opacity: 1;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-        
-        .contador-icone {
-            font-size: 1.2rem;
-            color: var(--rosa-poder);
-        }
-        
-        .contador-numero {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--dourado-brilhante);
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-        }
-        
-        /* LOADING */
-        .loading {
-            text-align: center;
-            padding: 60px 30px;
-            font-size: 1.3rem;
-            display: none;
-        }
-        
-        .spinner {
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-top: 5px solid var(--rosa-poder);
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1.5s linear infinite;
-            margin: 30px auto;
-            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .mensagem-loading {
-            color: var(--ouro);
-            font-size: 1.2rem;
-            margin-top: 20px;
-            font-style: italic;
-        }
-        
-        /* ERROR */
-        .error {
-            background: linear-gradient(45deg, rgba(139, 0, 0, 0.2), rgba(244, 67, 54, 0.2));
-            color: #ff8888;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            display: none;
-            border-left: 4px solid #f44336;
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2.2rem; }
-            .header p { font-size: 1.1rem; }
-            .nome-pombagira { font-size: 2.5rem; }
-            .imagem-pombagira-container { width: 220px; height: 220px; }
-            .pergunta { font-size: 1.3rem; }
-            .opcao { padding: 18px; }
-            .detalhes-grid { grid-template-columns: 1fr; }
-            .acoes-resultado { flex-direction: column; }
-            .btn-acao { min-width: 100%; }
-            .contador-acessos { 
-                bottom: 15px; 
-                right: 15px; 
-                padding: 8px 15px;
-                min-width: 140px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .header { padding: 25px 20px; }
-            .header h1 { font-size: 1.8rem; }
-            .quiz-box, .resultado { padding: 25px 20px; }
-            .btn-iniciar { padding: 16px 35px; font-size: 1.2rem; }
-            .imagem-pombagira-container { width: 180px; height: 180px; }
-        }
-        
-        /* ANIMAÇÃO DE PARTÍCULAS */
-        .particulas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        .particula {
-            position: absolute;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 50%;
-            animation: floatParticula linear infinite;
-        }
-        
-        @keyframes floatParticula {
-            to { transform: translateY(-100vh); }
-        }
-    </style>
-</head>
-<body>
-    <!-- PARTÍCULAS DE FUNDO -->
-    <div class="particulas" id="particulas"></div>
-    
-    <!-- CONTADOR DE VISITAS -->
-    <div class="contador-acessos" id="contador-acessos">
-        <div class="contador-icone"><i class="fas fa-eye"></i></div>
-        <div class="contador-texto">Visitas:</div>
-        <div class="contador-numero" id="acesso-numero">0</div>
+      `}</style>
     </div>
-    
-    <div class="container">
-        <!-- CABEÇALHO PRINCIPAL -->
-        <div class="header">
-            <h1>ORÁCULO DAS 12 POMBAGIRAS</h1>
-            <p>Desvende os Mistérios Profundos das Senhoras da Noite</p>
-            <p class="subtitulo">
-                <i class="fas fa-moon"></i> Quiz Dinâmico | 12 de 50 Perguntas Sorteadas por Sessão
-            </p>
-        </div>
-        
-        <!-- BOTÃO DE INÍCIO -->
-        <div class="iniciar-container" id="iniciar-container">
-            <button class="btn-iniciar" onclick="iniciarQuiz()" id="btn-iniciar">
-                <i class="fas fa-play-circle"></i> INICIAR JORNADA MÍSTICA
-            </button>
-        </div>
-        
-        <!-- MENSAGEM DE ERRO -->
-        <div class="error" id="error-msg"></div>
-        
-        <!-- LOADING -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p class="mensagem-loading" id="mensagem-loading">Consultando o Grimório Ancestral...</p>
-        </div>
-        
-        <!-- QUIZ -->
-        <div class="quiz-box" id="quiz-box">
-            <div class="pergunta-header">
-                <div class="dificuldade" id="dificuldade">NÍVEL: <span id="nivel-atual">1</span></div>
-                <div class="pontos" id="pontos-display">PONTOS: <span id="pontos">0</span></div>
-            </div>
-            
-            <div class="pergunta" id="pergunta"></div>
-            
-            <div class="opcoes" id="opcoes"></div>
-            
-            <button class="btn-proximo" id="btn-proximo" onclick="proximaPergunta()" disabled>
-                <span id="btn-texto">PRÓXIMA PERGUNTA</span>
-                <i class="fas fa-arrow-right" id="btn-icone"></i>
-            </button>
-            
-            <div class="progresso-container">
-                <div class="barra-progresso">
-                    <div class="progresso" id="progresso"></div>
-                </div>
-                <div class="contador-quiz">
-                    <span id="contador-pergunta">Pergunta 1/12</span>
-                    <span id="tempo-restante"></span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- RESULTADO -->
-        <div class="resultado" id="resultado">
-            <h2 class="titulo-resultado">A GIRA SE FECHA PARA VOCÊ</h2>
-            <h1 class="nome-pombagira" id="nome-pombagira">MARIA PADILHA</h1>
-            
-            <div class="imagem-pombagira-container">
-                <img class="imagem-pombagira" id="imagem-pombagira" src="" alt="Pombagira">
-            </div>
-            
-            <div class="frase-pombagira" id="frase-pombagira">
-                "Na encruzilhada do destino, eu comando!"
-            </div>
-            
-            <div class="detalhes-pombagira">
-                <h3 style="color: var(--ouro); margin-bottom: 20px;">
-                    <i class="fas fa-star"></i> SEUS ATRIBUTOS SAGRADOS
-                </h3>
-                <div class="detalhes-grid" id="detalhes-pombagira">
-                    <!-- Preenchido por JavaScript -->
-                </div>
-            </div>
-            
-            <div class="pontuacao-final">
-                <i class="fas fa-trophy"></i> SUA PONTUAÇÃO: <span id="pontuacao-final">0</span> PONTOS
-            </div>
-            
-            <div class="acoes-resultado">
-                <button class="btn-acao btn-reiniciar" onclick="reiniciarQuiz()">
-                    <i class="fas fa-redo"></i> NOVA JORNADA
-                </button>
-                <button class="btn-acao btn-compartilhar" onclick="compartilharResultado()">
-                    <i class="fas fa-share-alt"></i> COMPARTILHAR
-                </button>
-            </div>
-        </div>
-    </div>
+  );
+};
 
-    <script>
-        // ============================================
-        // CONFIGURAÇÕES
-        // ============================================
-        const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
-        
-        // URLs das imagens das Pombagiras (CORRIGIDAS)
-        const IMAGENS_POMBAGIRAS = {
-            'Maria Padilha': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
-            'Maria Mulambo': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png',
-            'Maria Quitéria': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_quiteria.png',
-            'Rosa Caveira': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/rosa_caveira.png',
-            'Dama da Noite': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/dama_noite.png',
-            'Sete Saias': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/sete_saias.png',
-            'Pombagira Cigana': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/cigana.png',
-            'Maria Navalha': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_navalha.png',
-            'Pombagira da Praia': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/praia.png',
-            'Maria Farrapo': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_farrapo.png',
-            'Pombagira Menina': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/menina.png',
-            'Pombagira da Figueira': 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/figueira.png'
-        };
-
-        // ============================================
-        // ESTADO DO QUIZ
-        // ============================================
-        const estado = {
-            perguntas: [],
-            perguntaAtual: 0,
-            pontos: 0,
-            pombagiras: [],
-            respostas: [],
-            respostaSelecionada: null,
-            respostaCorreta: null,
-            quizIniciado: false,
-            tempoInicio: null,
-            modoDemonstracao: false,
-            pombagiraResultado: null,
-            dadosPombagira: null
-        };
-
-        // ============================================
-        // ANIMAÇÕES DE PARTÍCULAS
-        // ============================================
-        function criarParticulas() {
-            const particulasContainer = document.getElementById('particulas');
-            const quantidade = 30;
-            
-            for (let i = 0; i < quantidade; i++) {
-                const particula = document.createElement('div');
-                particula.classList.add('particula');
-                
-                const tamanho = Math.random() * 10 + 5;
-                const posX = Math.random() * 100;
-                const duracao = Math.random() * 20 + 10;
-                const atraso = Math.random() * 5;
-                
-                particula.style.width = `${tamanho}px`;
-                particula.style.height = `${tamanho}px`;
-                particula.style.left = `${posX}%`;
-                particula.style.animationDuration = `${duracao}s`;
-                particula.style.animationDelay = `${atraso}s`;
-                particula.style.opacity = Math.random() * 0.3 + 0.1;
-                
-                particulasContainer.appendChild(particula);
-            }
-        }
-
-        // ============================================
-        // INICIALIZAÇÃO DO QUIZ
-        // ============================================
-        async function iniciarQuiz() {
-            console.log("🌙 Iniciando Oráculo das 12 Pombagiras...");
-            
-            // Esconder botão de início e mostrar loading
-            document.getElementById('iniciar-container').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            atualizarMensagemLoading('Conectando ao Supabase...');
-            
-            // Criar partículas
-            criarParticulas();
-            
-            try {
-                // Carregar dados do quiz
-                await carregarDadosQuiz();
-                
-                // Esconder loading e mostrar quiz
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('quiz-box').style.display = 'block';
-                estado.quizIniciado = true;
-                estado.tempoInicio = Date.now();
-                
-                // Mostrar primeira pergunta
-                mostrarPerguntaAtual();
-                
-            } catch (error) {
-                console.error("❌ Erro ao iniciar quiz:", error);
-                mostrarErro("Falha na conexão mística. Ativando modo de reverência...");
-                usarModoDemonstracao();
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('quiz-box').style.display = 'block';
-                estado.quizIniciado = true;
-                estado.modoDemonstracao = true;
-                estado.tempoInicio = Date.now();
-                
-                mostrarPerguntaAtual();
-            }
-        }
-
-        function atualizarMensagemLoading(mensagem) {
-            const elemento = document.getElementById('mensagem-loading');
-            if (elemento) {
-                elemento.textContent = mensagem;
-            }
-        }
-
-        // ============================================
-        // CONTADOR DE ACESSOS (CORRIGIDO - AGORA CARREGA IMEDIATAMENTE)
-        // ============================================
-        async function registrarAcesso() {
-            try {
-                if (sessionStorage.getItem('acessoRegistradoQuiz')) {
-                    console.log("✅ Acesso já registrado nesta sessão");
-                    return;
-                }
-                
-                const checkResponse = await fetch(
-                    SUPABASE_URL + '/rest/v1/page_views?page=eq.quiz-pombagiras&select=view_count', 
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_KEY
-                        }
-                    }
-                );
-                
-                if (!checkResponse.ok) throw new Error('Erro ao verificar contador');
-                
-                const existingData = await checkResponse.json();
-                
-                if (existingData.length > 0) {
-                    const currentCount = existingData[0].view_count || 0;
-                    const newCount = currentCount + 1;
-                    
-                    const updateResponse = await fetch(
-                        SUPABASE_URL + '/rest/v1/page_views?page=eq.quiz-pombagiras', 
-                        {
-                            method: 'PATCH',
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=minimal'
-                            },
-                            body: JSON.stringify({
-                                view_count: newCount,
-                                updated_at: new Date().toISOString()
-                            })
-                        }
-                    );
-                    
-                    if (!updateResponse.ok) throw new Error('Erro ao atualizar contador');
-                    
-                    console.log("✅ Contador atualizado:", newCount);
-                    
-                } else {
-                    const insertResponse = await fetch(SUPABASE_URL + '/rest/v1/page_views', {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_KEY,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            page: 'quiz-pombagiras',
-                            view_count: 1,
-                            updated_at: new Date().toISOString()
-                        })
-                    });
-                    
-                    if (!insertResponse.ok) throw new Error('Erro ao criar contador');
-                    
-                    console.log("✅ Contador criado para quiz-pombagiras");
-                }
-                
-                sessionStorage.setItem('acessoRegistradoQuiz', 'true');
-                
-            } catch (error) {
-                console.warn("⚠️ Não foi possível registrar acesso:", error.message);
-            }
-        }
-
-        async function carregarContador() {
-            try {
-                const cachedCount = localStorage.getItem('quizVisitCount');
-                const cacheTimestamp = localStorage.getItem('quizVisitCountTimestamp');
-                const now = Date.now();
-                
-                // Mostrar valor do cache imediatamente
-                if (cachedCount) {
-                    document.getElementById('acesso-numero').textContent = cachedCount;
-                }
-                
-                // Atualizar em background
-                setTimeout(async () => {
-                    await atualizarContador();
-                }, 500);
-                
-            } catch (error) {
-                console.warn("⚠️ Não foi possível carregar contador inicial");
-            }
-        }
-
-        async function atualizarContador() {
-            try {
-                const response = await fetch(
-                    SUPABASE_URL + '/rest/v1/page_views?page=eq.quiz-pombagiras&select=view_count', 
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_KEY,
-                            'Cache-Control': 'max-age=300'
-                        }
-                    }
-                );
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.length > 0) {
-                        const count = data[0].view_count || 0;
-                        
-                        document.getElementById('acesso-numero').textContent = count.toLocaleString();
-                        
-                        localStorage.setItem('quizVisitCount', count);
-                        localStorage.setItem('quizVisitCountTimestamp', Date.now());
-                        
-                        animarContador();
-                        
-                        console.log("📊 Contador atualizado do servidor:", count);
-                    } else {
-                        console.log("📊 Nenhum registro encontrado, criando...");
-                        await registrarAcesso();
-                        await atualizarContador();
-                    }
-                } else {
-                    throw new Error('Resposta não OK do servidor');
-                }
-            } catch (error) {
-                console.warn("⚠️ Erro ao atualizar contador:", error.message);
-                
-                // Usar cache como fallback
-                const cachedCount = localStorage.getItem('quizVisitCount');
-                if (cachedCount) {
-                    document.getElementById('acesso-numero').textContent = cachedCount + '*';
-                }
-            }
-        }
-
-        function animarContador() {
-            const contador = document.getElementById('contador-acessos');
-            const numero = document.getElementById('acesso-numero');
-            
-            contador.style.opacity = '0.9';
-            contador.style.transform = 'translateY(-5px)';
-            
-            numero.style.color = '#fff';
-            numero.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.8)';
-            
-            setTimeout(() => {
-                contador.style.opacity = '0.7';
-                contador.style.transform = 'translateY(0)';
-                
-                numero.style.color = '#ffd700';
-                numero.style.textShadow = '0 0 5px rgba(255, 215, 0, 0.3)';
-            }, 800);
-        }
-
-        // ============================================
-        // CARREGAMENTO DE DADOS
-        // ============================================
-        async function carregarDadosQuiz() {
-            console.log("📥 Carregando dados avançados...");
-            atualizarMensagemLoading('Consultando o Grimório das 12 Luas...');
-            
-            try {
-                // Registrar acesso primeiro
-                await registrarAcesso();
-                
-                // Carregar pombagiras
-                const resPombagiras = await fetch(SUPABASE_URL + '/rest/v1/pombagiras?select=*', {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY
-                    }
-                });
-                
-                if (!resPombagiras.ok) throw new Error('Erro ao carregar pombagiras');
-                estado.pombagiras = await resPombagiras.json();
-                console.log("✅ Pombagiras carregadas:", estado.pombagiras.length);
-                
-                // Carregar perguntas avançadas
-                atualizarMensagemLoading('Sintonizando com as 50 Perguntas da Sabedoria...');
-                const resPerguntas = await fetch(SUPABASE_URL + '/rest/v1/perguntas?select=*', {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY
-                    }
-                });
-                
-                if (!resPerguntas.ok) throw new Error('Erro ao carregar perguntas');
-                
-                const todasPerguntas = await resPerguntas.json();
-                
-                // Embaralhamento complexo
-                estado.perguntas = embaralharPerguntasComplexo(todasPerguntas);
-                
-                console.log("✅ 50 perguntas avançadas carregadas e embaralhadas");
-                
-            } catch (error) {
-                console.error("❌ Erro ao carregar dados:", error);
-                throw error;
-            }
-        }
-
-        function embaralharPerguntasComplexo(perguntas) {
-            console.log("🎲 Embaralhando perguntas com algoritmo complexo...");
-            
-            // 1. Divide por nível de dificuldade
-            const niveis = {
-                1: perguntas.filter(p => p.nivel_dificuldade === 1),
-                2: perguntas.filter(p => p.nivel_dificuldade === 2),
-                3: perguntas.filter(p => p.nivel_dificuldade === 3),
-                4: perguntas.filter(p => p.nivel_dificuldade === 4),
-                5: perguntas.filter(p => p.nivel_dificuldade === 5)
-            };
-            
-            // 2. Sorteia proporção baseada na hora do dia (muda sempre)
-            const hora = new Date().getHours();
-            const proporcoes = [
-                { nivel: 5, qtd: Math.floor(Math.random() * 3) + (hora > 18 ? 3 : 1) },
-                { nivel: 4, qtd: Math.floor(Math.random() * 4) + 2 },
-                { nivel: 3, qtd: Math.floor(Math.random() * 5) + 3 },
-                { nivel: 2, qtd: Math.floor(Math.random() * 6) + 2 },
-                { nivel: 1, qtd: Math.floor(Math.random() * 4) + 1 }
-            ];
-            
-            // 3. Seleciona perguntas de cada nível
-            let selecionadas = [];
-            proporcoes.forEach(prop => {
-                const disponiveis = niveis[prop.nivel];
-                const embaralhadas = [...disponiveis].sort(() => Math.random() - 0.5);
-                selecionadas.push(...embaralhadas.slice(0, Math.min(prop.qtd, disponiveis.length)));
-            });
-            
-            // 4. Embaralha a ordem final
-            selecionadas = selecionadas.sort(() => Math.random() - 0.5);
-            
-            // 5. Garante 12 perguntas
-            if (selecionadas.length > 12) {
-                selecionadas = selecionadas.slice(0, 12);
-            }
-            
-            // 6. Embaralha opções dentro de cada pergunta
-            selecionadas.forEach(pergunta => {
-                const opcoesComIndices = pergunta.opcoes.map((opcao, idx) => ({ opcao, idx }));
-                const embaralhadas = opcoesComIndices.sort(() => Math.random() - 0.5);
-                
-                // Atualiza opções e resposta correta
-                pergunta.opcoes = embaralhadas.map(item => item.opcao);
-                const novaPosicao = embaralhadas.findIndex(item => item.idx === pergunta.resposta_correta - 1);
-                pergunta.resposta_correta = novaPosicao + 1;
-            });
-            
-            console.log(`✅ ${selecionadas.length} perguntas selecionadas com complexidade variável`);
-            return selecionadas;
-        }
-
-        function usarModoDemonstracao() {
-            console.log("🔄 Ativando modo de demonstração...");
-            
-            estado.pombagiras = [
-                {
-                    id: 1,
-                    nome: "Maria Padilha",
-                    descricao: "Rainha das Encruzilhadas, senhora do comando e da sedução.",
-                    comandos: "Comando/Realeza",
-                    dia_reverencia: "Sexta-feira",
-                    cores: ["Vermelho", "Dourado", "Preto"],
-                    imagem_url: IMAGENS_POMBAGIRAS['Maria Padilha'],
-                    frase_assinatura: "Na encruzilhada do destino, eu comando!"
-                },
-                {
-                    id: 2,
-                    nome: "Maria Quitéria", 
-                    descricao: "Pombagira guerreira da proteção e justiça.",
-                    comandos: "Guerra/Proteção",
-                    dia_reverencia: "Terça-feira",
-                    cores: ["Vermelho", "Marrom", "Preto"],
-                    imagem_url: IMAGENS_POMBAGIRAS['Maria Quitéria'],
-                    frase_assinatura: "Por onde passo, faço justiça e defendo os fracos!"
-                }
-            ];
-            
-            estado.perguntas = [
-                {
-                    id: 1,
-                    pergunta: "Qual conceito da filosofia oriental se assemelha à atuação de Rosa Caveira nos processos de transformação?",
-                    opcoes: ["Karma", "Dharma", "Samsara", "Nirvana"],
-                    resposta_correta: 3,
-                    nivel_dificuldade: 5,
-                    explicacao: "Samsara (ciclo de morte e renascimento) reflete seu trabalho com ciclos de fim e recomeço."
-                },
-                {
-                    id: 2, 
-                    pergunta: "Qual elemento NÃO está presente no 'Trabalho das 7 Rosas' consagrado a Maria Padilha?",
-                    opcoes: ["Mel", "Pimenta-da-costa", "Canela em pó", "Açúcar mascavo"],
-                    resposta_correta: 4,
-                    nivel_dificuldade: 4,
-                    explicacao: "O açúcar mascavo é mais associado a Oxum. O trabalho tradicional usa mel (doçura), pimenta (força) e canela (aceleramento)."
-                }
-            ];
-            
-            while (estado.perguntas.length < 12) {
-                estado.perguntas.push(...estado.perguntas.slice(0, 2));
-            }
-            estado.perguntas = estado.perguntas.slice(0, 12);
-        }
-
-        // ============================================
-        // EXIBIÇÃO DE PERGUNTAS (CORRIGIDO - NAVEGAÇÃO AUTOMÁTICA)
-        // ============================================
-        function mostrarPerguntaAtual() {
-            if (estado.perguntaAtual >= estado.perguntas.length) {
-                finalizarQuiz();
-                return;
-            }
-            
-            const pergunta = estado.perguntas[estado.perguntaAtual];
-            
-            // Resetar estado da pergunta
-            estado.respostaSelecionada = null;
-            estado.respostaCorreta = null;
-            
-            // Atualizar interface
-            document.getElementById('pergunta').textContent = pergunta.pergunta;
-            document.getElementById('nivel-atual').textContent = pergunta.nivel_dificuldade;
-            document.getElementById('contador-pergunta').textContent = 
-                `Pergunta ${estado.perguntaAtual + 1}/${estado.perguntas.length}`;
-            document.getElementById('pontos').textContent = estado.pontos;
-            document.getElementById('btn-proximo').disabled = true;
-            document.getElementById('btn-texto').textContent = estado.perguntaAtual === estado.perguntas.length - 1 ? 'VER RESULTADO' : 'PRÓXIMA PERGUNTA';
-            
-            // Atualizar barra de progresso
-            const progresso = ((estado.perguntaAtual + 1) / estado.perguntas.length) * 100;
-            document.getElementById('progresso').style.width = `${progresso}%`;
-            
-            // Criar opções
-            const opcoesDiv = document.getElementById('opcoes');
-            opcoesDiv.innerHTML = '';
-            
-            pergunta.opcoes.forEach((opcao, index) => {
-                const div = document.createElement('div');
-                div.className = 'opcao';
-                div.innerHTML = `
-                    <div class="opcao-numero">${String.fromCharCode(65 + index)}</div>
-                    <div class="opcao-texto">${opcao}</div>
-                `;
-                div.onclick = () => selecionarOpcao(index);
-                opcoesDiv.appendChild(div);
-            });
-            
-            // Atualizar dificuldade visual
-            atualizarDificuldadeVisual(pergunta.nivel_dificuldade);
-        }
-
-        function atualizarDificuldadeVisual(nivel) {
-            const elemento = document.getElementById('dificuldade');
-            const cores = {
-                1: '#4CAF50',
-                2: '#8BC34A',
-                3: '#FFC107',
-                4: '#FF9800',
-                5: '#F44336'
-            };
-            
-            const textos = {
-                1: 'INICIANTE',
-                2: 'FÁCIL',
-                3: 'MÉDIO',
-                4: 'DIFÍCIL',
-                5: 'MESTRE'
-            };
-            
-            elemento.style.background = `rgba(${hexToRgb(cores[nivel])}, 0.15)`;
-            elemento.style.borderColor = `rgba(${hexToRgb(cores[nivel])}, 0.3)`;
-            elemento.style.color = cores[nivel];
-            elemento.innerHTML = `NÍVEL ${nivel}: <span style="color: ${cores[nivel]}; font-weight: bold;">${textos[nivel]}</span>`;
-        }
-
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
-        }
-
-        // ============================================
-        // FUNÇÃO PRINCIPAL CORRIGIDA - NAVEGAÇÃO AUTOMÁTICA
-        // ============================================
-        function selecionarOpcao(index) {
-            // Se já selecionou e mostrou resultado, não fazer nada
-            if (estado.respostaCorreta !== null) return;
-            
-            const pergunta = estado.perguntas[estado.perguntaAtual];
-            const opcoes = document.querySelectorAll('.opcao');
-            
-            // Remover seleção anterior
-            opcoes.forEach(op => {
-                op.classList.remove('selecionada');
-                op.classList.remove('correta');
-                op.classList.remove('errada');
-            });
-            
-            // Marcar como selecionada
-            opcoes[index].classList.add('selecionada');
-            estado.respostaSelecionada = index;
-            
-            // Verificar se acertou
-            const acertou = (index === pergunta.resposta_correta - 1);
-            
-            // Mostrar feedback visual
-            setTimeout(() => {
-                // Marcar correta
-                opcoes[pergunta.resposta_correta - 1].classList.add('correta');
-                
-                // Se errou, marcar como errada
-                if (!acertou && index !== pergunta.resposta_correta - 1) {
-                    opcoes[index].classList.add('errada');
-                }
-                
-                // Atualizar pontos
-                if (acertou) {
-                    estado.pontos += pergunta.nivel_dificuldade * 15;
-                    document.getElementById('pontos').textContent = estado.pontos;
-                    
-                    // Efeito de pontos
-                    criarEfeitoPontos(opcoes[index], pergunta.nivel_dificuldade * 15);
-                }
-                
-                estado.respostaCorreta = pergunta.resposta_correta - 1;
-                
-                // AGORA: Navegação automática após 1.5 segundos
-                setTimeout(() => {
-                    proximaPergunta();
-                }, 1500);
-                
-            }, 500);
-        }
-
-        function criarEfeitoPontos(elemento, pontos) {
-            const efeito = document.createElement('div');
-            efeito.textContent = `+${pontos}`;
-            efeito.style.position = 'absolute';
-            efeito.style.color = '#4CAF50';
-            efeito.style.fontWeight = 'bold';
-            efeito.style.fontSize = '1.2rem';
-            efeito.style.textShadow = '0 0 5px rgba(76, 175, 80, 0.8)';
-            efeito.style.animation = 'floatUp 1s ease-out forwards';
-            efeito.style.pointerEvents = 'none';
-            efeito.style.zIndex = '100';
-            
-            const rect = elemento.getBoundingClientRect();
-            efeito.style.left = `${rect.left + rect.width/2}px`;
-            efeito.style.top = `${rect.top}px`;
-            
-            document.body.appendChild(efeito);
-            
-            // Adicionar estilo de animação
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes floatUp {
-                    0% { opacity: 1; transform: translateY(0) scale(1); }
-                    100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Remover após animação
-            setTimeout(() => {
-                efeito.remove();
-                style.remove();
-            }, 1000);
-        }
-
-        function proximaPergunta() {
-            estado.perguntaAtual++;
-            mostrarPerguntaAtual();
-        }
-
-        // ============================================
-        // FINALIZAÇÃO E RESULTADO
-        // ============================================
-        async function finalizarQuiz() {
-            console.log("🏁 Finalizando quiz...");
-            document.getElementById('quiz-box').style.display = 'none';
-            
-            // Calcular porcentagem
-            const maxPontos = estado.perguntas.reduce((acc, p) => acc + (p.nivel_dificuldade * 15), 0);
-            const porcentagem = (estado.pontos / maxPontos) * 100;
-            
-            // Determinar Pombagira baseada na pontuação e perfil
-            estado.pombagiraResultado = determinarPombagiraResultado(porcentagem);
-            estado.dadosPombagira = estado.pombagiraResultado;
-            
-            // Salvar resultado
-            if (!estado.modoDemonstracao) {
-                await salvarResultadoQuiz(estado.pombagiraResultado.id);
-            }
-            
-            // Mostrar resultado
-            mostrarResultado();
-        }
-
-        function determinarPombagiraResultado(porcentagem) {
-            console.log(`🎯 Determinando Pombagira para ${porcentagem.toFixed(1)}% de acerto`);
-            
-            // Mapeamento baseado na pontuação e perfil
-            if (porcentagem >= 90) {
-                // Excelente - Pombagiras de comando e sabedoria
-                return estado.pombagiras.find(p => p.nome === "Maria Padilha") || estado.pombagiras[0];
-            } else if (porcentagem >= 75) {
-                // Bom - Pombagiras de proteção e justiça
-                const opcoes = estado.pombagiras.filter(p => 
-                    p.nome === "Maria Quitéria" || 
-                    p.nome === "Rosa Caveira" ||
-                    p.nome === "Dama da Noite"
-                );
-                return opcoes[Math.floor(Math.random() * opcoes.length)] || estado.pombagiras[1];
-            } else if (porcentagem >= 50) {
-                // Médio - Pombagiras de cura e equilíbrio
-                const opcoes = estado.pombagiras.filter(p => 
-                    p.nome === "Maria Mulambo" || 
-                    p.nome === "Pombagira da Praia" ||
-                    p.nome === "Sete Saias"
-                );
-                return opcoes[Math.floor(Math.random() * opcoes.length)] || estado.pombagiras[2];
-            } else if (porcentagem >= 30) {
-                // Básico - Pombagiras de transformação
-                const opcoes = estado.pombagiras.filter(p => 
-                    p.nome === "Maria Farrapo" || 
-                    p.nome === "Pombagira da Figueira" ||
-                    p.nome === "Pombagira Cigana"
-                );
-                return opcoes[Math.floor(Math.random() * opcoes.length)] || estado.pombagiras[3];
-            } else {
-                // Iniciante - Pombagiras de renovação
-                const opcoes = estado.pombagiras.filter(p => 
-                    p.nome === "Pombagira Menina" || 
-                    p.nome === "Maria Navalha"
-                );
-                return opcoes[Math.floor(Math.random() * opcoes.length)] || estado.pombagiras[4];
-            }
-        }
-
-        async function salvarResultadoQuiz(pombagiraId) {
-            try {
-                console.log("💾 Salvando resultado...");
-                
-                const resultadoData = {
-                    session_id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    pombagira_resultado: pombagiraId,
-                    score: estado.pontos
-                };
-                
-                console.log("📤 Enviando:", resultadoData);
-                
-                const response = await fetch(SUPABASE_URL + '/rest/v1/resultados', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify(resultadoData)
-                });
-                
-                if (response.ok) {
-                    console.log("✅ Resultado salvo!");
-                } else {
-                    const errorText = await response.text();
-                    console.warn("⚠️ Erro ao salvar:", errorText);
-                }
-                
-            } catch (error) {
-                console.warn("⚠️ Não foi possível salvar resultado:", error.message);
-            }
-        }
-
-        function mostrarResultado() {
-            const pombagira = estado.dadosPombagira;
-            
-            // Atualizar elementos
-            document.getElementById('nome-pombagira').textContent = pombagira.nome;
-            document.getElementById('frase-pombagira').textContent = `"${pombagira.frase_assinatura || 'Que os caminhos se abram para você!'}"`;
-            document.getElementById('pontuacao-final').textContent = estado.pontos;
-            
-            // Carregar imagem
-            const imagemUrl = IMAGENS_POMBAGIRAS[pombagira.nome] || pombagira.imagem_url;
-            if (imagemUrl) {
-                document.getElementById('imagem-pombagira').src = imagemUrl;
-                document.getElementById('imagem-pombagira').alt = pombagira.nome;
-            }
-            
-            // Criar detalhes
-            const detalhesContainer = document.getElementById('detalhes-pombagira');
-            detalhesContainer.innerHTML = '';
-            
-            const detalhes = [
-                { label: 'Comando', valor: pombagira.comandos, icone: 'fas fa-crown' },
-                { label: 'Dia de Reverência', valor: pombagira.dia_reverencia, icone: 'fas fa-calendar-alt' },
-                { label: 'Fase Lunar', valor: pombagira.fase_lua, icone: 'fas fa-moon' },
-                { label: 'Cores Sagradas', valor: pombagira.cores ? pombagira.cores.join(', ') : null, icone: 'fas fa-palette' },
-                { label: 'Calunga', valor: pombagira.calunga, icone: 'fas fa-crossroads' },
-                { label: 'Oferendas', valor: pombagira.oferendas ? pombagira.oferendas.slice(0, 3).join(', ') : null, icone: 'fas fa-gift' }
-            ];
-            
-            detalhes.forEach(detalhe => {
-                if (detalhe.valor) {
-                    const div = document.createElement('div');
-                    div.className = 'detalhe-item';
-                    div.innerHTML = `
-                        <div class="detalhe-label">
-                            <i class="${detalhe.icone}"></i> ${detalhe.label}:
-                        </div>
-                        <div class="detalhe-valor">${detalhe.valor}</div>
-                    `;
-                    detalhesContainer.appendChild(div);
-                }
-            });
-            
-            // Adicionar descrição se disponível
-            if (pombagira.descricao) {
-                const descDiv = document.createElement('div');
-                descDiv.className = 'detalhe-item';
-                descDiv.style.gridColumn = '1 / -1';
-                descDiv.innerHTML = `
-                    <div class="detalhe-label">
-                        <i class="fas fa-scroll"></i> Sabedoria:
-                    </div>
-                    <div class="detalhe-valor" style="font-style: italic; line-height: 1.5;">${pombagira.descricao}</div>
-                `;
-                detalhesContainer.appendChild(descDiv);
-            }
-            
-            // Mostrar resultado com animação
-            document.getElementById('resultado').style.display = 'block';
-            
-            // Scroll para resultado
-            setTimeout(() => {
-                document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-
-        function reiniciarQuiz() {
-            // Resetar estado
-            estado.perguntaAtual = 0;
-            estado.pontos = 0;
-            estado.respostas = [];
-            estado.respostaSelecionada = null;
-            estado.respostaCorreta = null;
-            estado.pombagiraResultado = null;
-            estado.dadosPombagira = null;
-            
-            // Embaralhar perguntas novamente
-            if (!estado.modoDemonstracao && estado.perguntas.length > 0) {
-                estado.perguntas = embaralharPerguntasComplexo(estado.perguntas);
-            }
-            
-            // Esconder resultado, mostrar quiz
-            document.getElementById('resultado').style.display = 'none';
-            document.getElementById('quiz-box').style.display = 'block';
-            
-            // Mostrar primeira pergunta
-            mostrarPerguntaAtual();
-            
-            // Scroll para topo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function compartilharResultado() {
-            const pombagira = estado.dadosPombagira;
-            const texto = `Acabei de descobrir minha Pombagira protetora no Quiz Avançado das 12 Pombagiras!\n\n🌙 Minha Pombagira: ${pombagira.nome}\n📜 ${pombagira.frase_assinatura}\n🎯 Pontuação: ${estado.pontos} pontos\n\nFaça o quiz você também!`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Minha Pombagira Protetora',
-                    text: texto,
-                    url: window.location.href
-                });
-            } else {
-                // Fallback para copiar
-                navigator.clipboard.writeText(texto + '\n\n' + window.location.href)
-                    .then(() => alert('Resultado copiado para a área de transferência!'))
-                    .catch(err => console.error('Erro ao copiar:', err));
-            }
-        }
-
-        function mostrarErro(mensagem) {
-            const errorDiv = document.getElementById('error-msg');
-            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${mensagem}`;
-            errorDiv.style.display = 'block';
-            setTimeout(() => errorDiv.style.display = 'none', 5000);
-        }
-
-        // ============================================
-        // INICIALIZAÇÃO - CARREGA CONTADOR IMEDIATAMENTE
-        // ============================================
-        console.log("✨ Quiz Avançado das 12 Pombagiras carregado!");
-        console.log("🔗 Supabase conectado");
-        console.log("🎨 Interface premium ativa");
-        console.log("🎲 Sistema de embaralhamento complexo pronto");
-        
-        // CARREGAR CONTADOR ASSIM QUE A PÁGINA CARREGA
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log("📊 Iniciando contador de acessos...");
-            carregarContador();
-        });
-        
-        // Atualizar contador periodicamente
-        setInterval(() => atualizarContador(), 5 * 60 * 1000);
-    </script>
-</body>
-</html>
+export default PombagiraQuiz;
