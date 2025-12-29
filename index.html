@@ -11,12 +11,22 @@
         
         * {
             font-family: 'Gothic A1', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
         }
         
         body {
             background: linear-gradient(135deg, #1a0b0b 0%, #2d0b14 25%, #1b0b1a 50%, #0b0b1a 75%, #000000 100%);
             min-height: 100vh;
             background-attachment: fixed;
+            overflow-y: auto;
         }
         
         h1, h2, h3, .font-gothic {
@@ -82,16 +92,55 @@
         .option-btn {
             background: linear-gradient(145deg, rgba(43, 0, 15, 0.9), rgba(26, 0, 13, 0.9));
             border: 1px solid #5a0b1e;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
         
-        .option-btn:hover {
+        .option-btn:hover:not(:disabled) {
             background: linear-gradient(145deg, rgba(91, 0, 35, 0.9), rgba(43, 0, 15, 0.9));
             border-color: #8b0023;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(139, 0, 35, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 0, 35, 0.5);
+        }
+        
+        .option-btn.correct {
+            background: linear-gradient(145deg, rgba(0, 75, 32, 0.9), rgba(0, 100, 0, 0.9)) !important;
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5) !important;
+            color: #ffffff !important;
+            animation: pulse-green 1s ease-in-out;
+        }
+        
+        .option-btn.incorrect {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.9), rgba(100, 0, 0, 0.9)) !important;
+            border-color: #ff0000 !important;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5) !important;
+            color: #ffffff !important;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .option-btn.correct-answer {
+            background: linear-gradient(145deg, rgba(0, 100, 0, 0.9), rgba(0, 128, 0, 0.9)) !important;
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.7) !important;
+            animation: glow-green 1s infinite alternate;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes glow-green {
+            0% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         .option-btn::before {
@@ -105,15 +154,16 @@
             transition: 0.5s;
         }
         
-        .option-btn:hover::before {
+        .option-btn:hover:not(:disabled)::before {
             left: 100%;
         }
         
         .skull-decoration {
-            position: absolute;
+            position: fixed;
             opacity: 0.05;
             font-size: 8rem;
             z-index: 0;
+            pointer-events: none;
         }
         
         .candle {
@@ -154,13 +204,15 @@
         }
         
         .rose-petal {
-            position: absolute;
+            position: fixed;
             width: 20px;
             height: 20px;
             background: radial-gradient(circle at 30% 30%, #8b0000, #4a0000);
             border-radius: 50% 0 50% 50%;
             opacity: 0.3;
             animation: fall 20s linear infinite;
+            pointer-events: none;
+            z-index: 1;
         }
         
         @keyframes fall {
@@ -297,9 +349,99 @@
             border-radius: 50% 50% 20% 20%;
             animation: flame 2s infinite alternate;
         }
+        
+        /* Efeito de transição entre perguntas */
+        .question-transition {
+            animation: slideOut 0.5s ease-out forwards;
+        }
+        
+        @keyframes slideOut {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-100%); opacity: 0; }
+        }
+        
+        .question-enter {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Feedback de resposta */
+        .feedback-correct {
+            animation: correctFeedback 1.5s ease-out;
+        }
+        
+        .feedback-incorrect {
+            animation: incorrectFeedback 1.5s ease-out;
+        }
+        
+        @keyframes correctFeedback {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes incorrectFeedback {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Progress bar melhorada */
+        .progress-bar-container {
+            position: relative;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b0000, #ff0000, #8b0000);
+            background-size: 200% 100%;
+            animation: progress-glow 2s linear infinite;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+        }
+        
+        @keyframes progress-glow {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Barra de rolagem personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 0, 10, 0.3);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #8b0000, #5a0b1e);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #ff0000, #8b0000);
+        }
+        
+        /* Container principal sem overflow */
+        .quiz-container {
+            max-width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
     </style>
 </head>
-<body class="text-gray-300 relative overflow-x-hidden">
+<body class="text-gray-300">
     <!-- Pétalas de rosa caindo -->
     <div id="petals"></div>
     
@@ -337,29 +479,25 @@
         // ==============================
         const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
-        const PAGE_NAME = 'quiz-pombagira-gotico'; // NOME ATUALIZADO
+        const PAGE_NAME = 'quiz-pombagira-gotico';
         
         // ==============================
         // FUNÇÃO DO CONTADOR SIMPLIFICADA
         // ==============================
         async function updateViewCounter() {
             try {
-                // Primeiro, mostrar um número inicial do localStorage
                 let localCount = localStorage.getItem('quiz_pombagira_views');
                 if (!localCount) {
                     localCount = '1';
                     localStorage.setItem('quiz_pombagira_views', localCount);
                 }
                 
-                // Mostrar número do localStorage imediatamente
                 const viewCountElement = document.getElementById('viewCount');
                 if (viewCountElement) {
                     viewCountElement.innerHTML = parseInt(localCount).toLocaleString();
                 }
                 
-                // Tentar atualizar no Supabase (mais simples)
                 try {
-                    // Primeiro buscar o valor atual
                     const getResponse = await fetch(
                         `${SUPABASE_URL}/rest/v1/page_views?page=eq.${encodeURIComponent(PAGE_NAME)}&select=view_count`,
                         {
@@ -378,7 +516,6 @@
                             newCount = (data[0].view_count || 0) + 1;
                         }
                         
-                        // Atualizar no Supabase
                         const updateResponse = await fetch(
                             `${SUPABASE_URL}/rest/v1/page_views?page=eq.${encodeURIComponent(PAGE_NAME)}`,
                             {
@@ -396,16 +533,13 @@
                         );
                         
                         if (updateResponse.ok || updateResponse.status === 204) {
-                            // Atualizar display
                             if (viewCountElement) {
                                 viewCountElement.innerHTML = newCount.toLocaleString();
                             }
-                            // Salvar no localStorage
                             localStorage.setItem('quiz_pombagira_views', newCount.toString());
                         }
                     }
                 } catch (supabaseError) {
-                    // Se falhar, incrementar o localStorage
                     const currentCount = parseInt(localStorage.getItem('quiz_pombagira_views') || '1');
                     const newCount = currentCount + 1;
                     localStorage.setItem('quiz_pombagira_views', newCount.toString());
@@ -416,7 +550,6 @@
                 }
                 
             } catch (error) {
-                // Fallback final - usar localStorage
                 const localCount = localStorage.getItem('quiz_pombagira_views') || '1';
                 const viewCountElement = document.getElementById('viewCount');
                 if (viewCountElement) {
@@ -686,6 +819,7 @@
                 this.showResult = false;
                 this.selectedAnswer = null;
                 this.isCorrect = null;
+                this.isTransitioning = false;
                 this.container = document.getElementById('quiz-app');
                 this.render();
             }
@@ -697,8 +831,8 @@
                     const gain = ctx.createGain();
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.frequency.value = correct ? 220 : 110;
-                    osc.type = 'sawtooth';
+                    osc.frequency.value = correct ? 523.25 : 261.63; // Notas musicais
+                    osc.type = 'sine';
                     gain.gain.setValueAtTime(0.2, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
                     osc.start(ctx.currentTime);
@@ -709,26 +843,128 @@
             }
 
             handleAnswer(answer) {
+                if (this.isTransitioning) return;
+                
+                this.isTransitioning = true;
                 const correct = answer === questions[this.currentQuestion].correct;
                 this.selectedAnswer = answer;
                 this.isCorrect = correct;
                 this.playSound(correct);
+
+                // Atualizar cores dos botões imediatamente
+                this.updateButtonColors(answer, correct);
 
                 if (correct) {
                     const pombagiraName = questions[this.currentQuestion].pombagira;
                     this.score[pombagiraName] = (this.score[pombagiraName] || 0) + 1;
                 }
 
+                // Mostrar feedback visual
+                this.showFeedback(correct);
+
                 setTimeout(() => {
                     if (this.currentQuestion < questions.length - 1) {
-                        this.currentQuestion++;
-                        this.selectedAnswer = null;
-                        this.isCorrect = null;
+                        this.transitionToNextQuestion();
                     } else {
                         this.showResult = true;
+                        this.isTransitioning = false;
+                        this.render();
                     }
-                    this.render();
                 }, 1500);
+            }
+
+            updateButtonColors(selectedAnswer, isCorrect) {
+                const buttons = document.querySelectorAll('.option-btn');
+                const correctAnswer = questions[this.currentQuestion].correct;
+                
+                buttons.forEach(button => {
+                    const buttonText = button.textContent.trim();
+                    button.disabled = true;
+                    
+                    // Reset classes
+                    button.classList.remove('correct', 'incorrect', 'correct-answer');
+                    
+                    if (buttonText === selectedAnswer) {
+                        if (isCorrect) {
+                            button.classList.add('correct');
+                        } else {
+                            button.classList.add('incorrect');
+                        }
+                    }
+                    
+                    // Mostrar resposta correta se o usuário errou
+                    if (!isCorrect && buttonText === correctAnswer) {
+                        button.classList.add('correct-answer');
+                    }
+                });
+            }
+
+            showFeedback(isCorrect) {
+                const feedbackElement = document.createElement('div');
+                feedbackElement.className = `fixed inset-0 flex items-center justify-center z-50 ${
+                    isCorrect ? 'feedback-correct' : 'feedback-incorrect'
+                }`;
+                
+                feedbackElement.innerHTML = `
+                    <div class="bg-black/80 p-8 rounded-xl border-2 ${
+                        isCorrect ? 'border-green-500' : 'border-red-500'
+                    } text-center max-w-md">
+                        <i class="fas fa-${isCorrect ? 'check-circle' : 'times-circle'} text-5xl ${
+                            isCorrect ? 'text-green-400' : 'text-red-400'
+                        } mb-4"></i>
+                        <h3 class="text-2xl font-bold ${isCorrect ? 'text-green-300' : 'text-red-300'} mb-2">
+                            ${isCorrect ? 'ACERTOU!' : 'ERROU!'}
+                        </h3>
+                        <p class="text-gray-300">
+                            ${isCorrect ? 'Você desvendou este mistério!' : 'Continue explorando os segredos...'}
+                        </p>
+                    </div>
+                `;
+                
+                document.body.appendChild(feedbackElement);
+                
+                // Remover feedback após 1 segundo
+                setTimeout(() => {
+                    if (feedbackElement.parentNode) {
+                        feedbackElement.parentNode.removeChild(feedbackElement);
+                    }
+                }, 1000);
+            }
+
+            transitionToNextQuestion() {
+                const quizContent = document.querySelector('.quiz-content');
+                if (quizContent) {
+                    quizContent.classList.add('question-transition');
+                }
+                
+                setTimeout(() => {
+                    this.currentQuestion++;
+                    this.selectedAnswer = null;
+                    this.isCorrect = null;
+                    this.isTransitioning = false;
+                    
+                    // Atualizar progress bar
+                    this.updateProgressBar();
+                    
+                    // Renderizar nova pergunta com animação de entrada
+                    this.render();
+                    
+                    // Adicionar classe de entrada
+                    setTimeout(() => {
+                        const newQuizContent = document.querySelector('.quiz-content');
+                        if (newQuizContent) {
+                            newQuizContent.classList.add('question-enter');
+                        }
+                    }, 50);
+                }, 500);
+            }
+
+            updateProgressBar() {
+                const progressPercent = ((this.currentQuestion + 1) / questions.length) * 100;
+                const progressBar = document.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = `${progressPercent}%`;
+                }
             }
 
             getQueenPombagira() {
@@ -745,26 +981,26 @@
 
             renderQuiz() {
                 const question = questions[this.currentQuestion];
+                const progressPercent = ((this.currentQuestion + 1) / questions.length) * 100;
+                
                 return `
-                    <div class="max-w-4xl w-full">
+                    <div class="max-w-4xl w-full quiz-content">
                         <div class="card rounded-xl shadow-2xl overflow-hidden smoke-effect">
                             <div class="bg-gradient-to-r from-gray-900 to-black p-6 border-b border-red-900">
                                 <div class="flex justify-between items-center mb-4">
                                     <div class="flex items-center gap-3">
                                         <div class="candle"></div>
                                         <span class="text-red-300 font-bold text-lg font-gothic">
-                                            ${this.currentQuestion + 1}/${questions.length}
+                                            Pergunta ${this.currentQuestion + 1} de ${questions.length}
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-moon blood-red candle-flicker"></i>
-                                        <span class="text-gray-400 text-sm">Mistério das Giras</span>
+                                        <span class="text-gray-400 text-sm font-gothic">Ritual Gótico</span>
                                     </div>
                                 </div>
-                                <div class="bg-black/60 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-red-900 to-purple-900 h-full transition-all duration-700"
-                                         style="width: ${((this.currentQuestion + 1) / questions.length) * 100}%">
-                                    </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
                                 </div>
                             </div>
 
@@ -776,36 +1012,17 @@
                                     </h2>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     ${question.options.map((option, index) => {
-                                        let bgColor = 'option-btn';
-                                        let borderColor = 'border-gray-800';
-                                        let textColor = 'text-gray-300';
-
-                                        if (this.selectedAnswer === option) {
-                                            if (this.isCorrect) {
-                                                bgColor = 'bg-gradient-to-r from-green-900/80 to-emerald-900/80';
-                                                borderColor = 'border-green-800';
-                                                textColor = 'text-green-200';
-                                            } else {
-                                                bgColor = 'bg-gradient-to-r from-red-900/80 to-rose-900/80';
-                                                borderColor = 'border-red-800';
-                                                textColor = 'text-red-200';
-                                            }
-                                        }
-
-                                        if (this.selectedAnswer && option === question.correct && !this.isCorrect) {
-                                            bgColor = 'bg-gradient-to-r from-green-900/80 to-emerald-900/80';
-                                            borderColor = 'border-green-800';
-                                            textColor = 'text-green-200';
-                                        }
-
+                                        let buttonClass = 'option-btn';
+                                        let disabled = this.selectedAnswer ? 'disabled' : '';
+                                        
                                         return `
                                             <button onclick="quiz.handleAnswer('${option.replace(/'/g, "\\'")}')" 
-                                                    ${this.selectedAnswer ? 'disabled' : ''}
-                                                    class="${bgColor} ${borderColor} ${textColor} px-4 py-4 rounded-lg font-medium transition-all duration-300 shadow-lg disabled:cursor-not-allowed relative z-10">
+                                                    ${disabled}
+                                                    class="${buttonClass} text-gray-300 px-6 py-5 rounded-xl font-medium transition-all duration-300 shadow-lg relative z-10">
                                                 <div class="flex items-center justify-between">
-                                                    <span>${option}</span>
+                                                    <span class="text-lg">${option}</span>
                                                     <i class="fas fa-question-circle opacity-50"></i>
                                                 </div>
                                             </button>
@@ -815,10 +1032,12 @@
 
                                 ${this.selectedAnswer ? `
                                     <div class="mt-8 text-center">
-                                        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-lg ${this.isCorrect ? 'bg-green-900/40 border-green-700' : 'bg-red-900/40 border-red-700'} border">
+                                        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-lg ${
+                                            this.isCorrect ? 'bg-green-900/40 border-green-700' : 'bg-red-900/40 border-red-700'
+                                        } border ${this.isCorrect ? 'feedback-correct' : 'feedback-incorrect'}">
                                             ${this.isCorrect ? 
-                                                '<i class="fas fa-skull-crossbones text-green-400"></i><span class="text-green-300 font-bold font-gothic">VERDADE REVELADA</span>' : 
-                                                '<i class="fas fa-tombstone-alt text-red-400"></i><span class="text-red-300 font-bold font-gothic">ENIGMA PERDIDO</span>'
+                                                '<i class="fas fa-skull-crossbones text-green-400 text-xl"></i><span class="text-green-300 font-bold font-gothic text-lg">ACERTOU! +1 Ponto</span>' : 
+                                                '<i class="fas fa-tombstone-alt text-red-400 text-xl"></i><span class="text-red-300 font-bold font-gothic text-lg">ERROU! Tente a próxima</span>'
                                             }
                                         </div>
                                     </div>
@@ -829,7 +1048,7 @@
                         <div class="mt-6 text-center">
                             <p class="text-gray-500 text-sm font-medium flex items-center justify-center gap-2">
                                 <i class="fas fa-crow"></i>
-                                <span class="font-gothic">Descubra qual Pombagira reina em seu caminho sombrio</span>
+                                <span class="font-gothic">${this.currentQuestion + 1}/${questions.length} • Desvende todos os mistérios</span>
                                 <i class="fas fa-ghost"></i>
                             </p>
                         </div>
@@ -921,7 +1140,7 @@
 
                                 <div class="text-center">
                                     <button onclick="quiz.reset()"
-                                            class="bg-gradient-to-r from-black to-gray-900 blood-red border border-red-900 text-gray-200 px-8 py-3 rounded-lg font-bold hover:from-red-900 hover:to-black transition-all duration-300 shadow-lg font-gothic">
+                                            class="bg-gradient-to-r from-black to-gray-900 blood-red border border-red-900 text-gray-200 px-8 py-4 rounded-lg font-bold hover:from-red-900 hover:to-black transition-all duration-300 shadow-lg font-gothic text-lg hover:scale-105">
                                         <i class="fas fa-redo mr-2"></i>Reiniciar Ritual
                                     </button>
                                 </div>
@@ -937,12 +1156,18 @@
                 this.showResult = false;
                 this.selectedAnswer = null;
                 this.isCorrect = null;
+                this.isTransitioning = false;
                 this.render();
             }
 
             render() {
                 if (this.container) {
                     this.container.innerHTML = this.showResult ? this.renderResult() : this.renderQuiz();
+                    
+                    // Inicializar progress bar
+                    if (!this.showResult) {
+                        this.updateProgressBar();
+                    }
                 }
             }
         }
