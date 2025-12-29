@@ -1,60 +1,42 @@
-📋 INFORMAÇÕES DO PROJETO
-Nome: Quiz das Pombagiras - O Mistério das Giras
-Tema: Gótico/Melancólico com cores carmesim, roxo e preto
-Status: ✅ COMPLETO E FUNCIONAL
-Última Atualização: Otimização completa de interface e UX
+# Quiz das Pombagiras - O Mistério das Giras
 
-🎯 FUNCIONALIDADES PRINCIPAIS
-✅ QUIZ INTERATIVO
-15 perguntas sobre Pombagiras
+Um quiz interativo e imersivo com temática gótica e espiritual, dedicado às Pombagiras da Umbanda e Quimbanda. Descubra qual Pombagira é sua rainha através de 15 perguntas misteriosas!
 
-Sistema de pontuação
+![Quiz das Pombagiras - Screenshot](https://alexialuzdeferro.github.io/minha-pombagira/)  
+*(Adicione uma imagem de preview do quiz se quiser)*
 
-Resultado personalizado com Pombagira "Rainha"
+## ✨ Características
 
-Efeitos visuais para acertos/erros
+- Design gótico sombrio com animações de pétalas de rosa caindo, velas tremeluzentes e efeitos de fumaça
+- 15 perguntas sobre as principais Pombagiras
+- Resultado personalizado: revela sua **Pombagira Rainha** com descrição, cores, lua, dia, signos, simbologia e mensagem
+- Feedback visual imediato (acerto/erro) com animações
+- Contador de visitas (usando Supabase)
+- Totalmente responsivo (mobile e desktop)
+- Sons sutis ao acertar/errar
+- Transições suaves entre perguntas
 
-Animações de transição suaves
+## Pombagiras incluídas
 
-✅ CONTADOR DE VISITAS
-Conexão com Supabase
+- Maria Padilha  
+- Maria Mulambo  
+- Maria Quitéria  
+- Rosa Caveira  
+- Dama da Noite  
+- Sete Saias  
+- Pombagira Cigana  
+- Maria Navalha  
+- Pombagira da Praia  
+- Maria Farrapo  
+- Pombagira Menina  
+- Pombagira da Figueira  
 
-Nome da página: quiz-pombagira-gotico
+## Tecnologias utilizadas
 
-Fallback com localStorage
+- HTML5  
+- Tailwind CSS (v2.2.19)  
+- Font Awesome  
+- Google Fonts (Cinzel + Gothic A1)  
+- JavaScript puro (sem frameworks)  
+- Supabase (para contador de visualizações)  
 
-Display discreto no canto inferior direito
-
-✅ DESIGN GÓTICO OTIMIZADO
-Paleta: Carmesim, Roxo profundo, Preto absoluto, Dourado envelhecido
-
-Fontes: Cinzel (títulos) + Gothic A1 (texto)
-
-Elementos visuais: Pétalas caindo, crânios decorativos, velas animadas
-
-Efeitos: Brilho, sombras, transições suaves
-
-🔧 BUGS CORRIGIDOS NA ÚLTIMA VERSÃO
-Barra de rolagem estranha - ✅ CORRIGIDO
-
-Overflow corrigido em body/html
-
-Barra de rolagem personalizada gótica
-
-Feedback visual fraco - ✅ MELHORADO
-
-Botões VERDE VIBRANTE ao acertar
-
-Botões VERMELHO INTENSO ao errar
-
-Animações de pulso e shake
-
-Pop-up de feedback central
-
-Transição entre perguntas - ✅ OTIMIZADO
-
-Animações slideIn/slideOut
-
-Prevenção de clique duplo
-
-Progress bar animada
