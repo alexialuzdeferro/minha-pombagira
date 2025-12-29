@@ -1,8 +1,7 @@
 # Quiz das Pombagiras - O Mistério das Giras
 
 Um quiz interativo e imersivo com temática gótica e espiritual, dedicado às Pombagiras da Umbanda e Quimbanda. Descubra qual Pombagira é sua rainha através de 15 perguntas misteriosas!
-
-(https://alexialuzdeferro.github.io/minha-pombagira/)  
+https://alexialuzdeferro.github.io/minha-pombagira/ 
 
 
 ## ✨ Características
