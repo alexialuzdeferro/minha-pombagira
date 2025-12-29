@@ -168,6 +168,32 @@
             margin: 20px 0;
             display: none;
         }
+        
+        /* Estilos para detalhes da Pombagira no resultado */
+        .detalhes-pombagira {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .detalhes-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .detalhes-label {
+            color: #ffd700;
+            font-weight: bold;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+        
+        .detalhes-valor {
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -188,7 +214,7 @@
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Iniciando quiz...</p>
+            <p>Conectando ao Oráculo Sagrado...</p>
         </div>
         
         <div class="quiz-box" id="quiz-box">
@@ -207,31 +233,40 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES SUPABASE
+        // ============================================
+        // CONFIGURAÇÕES SUPABASE - NÃO ALTERAR
+        // ============================================
         const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
 
+        // ============================================
         // ESTADO DO QUIZ
+        // ============================================
         const estado = {
             perguntas: [],
             perguntaAtual: 0,
             pontos: 0,
             pombagiras: [],
-            respostas: []
+            respostas: [],
+            pombagiraSelecionada: null,
+            dadosPombagira: null
         };
 
+        // ============================================
         // FUNÇÃO PRINCIPAL - INICIAR QUIZ
+        // ============================================
         async function iniciarQuiz() {
-            console.log("🚀 Iniciando quiz das Pombagiras...");
+            console.log("🚀 Iniciando Quiz das 12 Pombagiras...");
+            mostrarMensagem("Conectando ao Oráculo Sagrado...");
             
             try {
-                // 1. Registrar acesso (contador)
+                // 1. Registrar acesso (contador de visitas)
                 await registrarAcesso();
                 
                 // 2. Carregar contador visual
                 await carregarContador();
                 
-                // 3. Carregar dados do quiz
+                // 3. Carregar dados do quiz (NOVA ESTRUTURA)
                 await carregarDadosQuiz();
                 
                 // 4. Mostrar quiz na tela
@@ -239,8 +274,8 @@
                 
             } catch (error) {
                 console.error("❌ Erro ao iniciar quiz:", error);
-                mostrarErro("Usando dados de demonstração...");
-                usarDadosDemo();
+                mostrarErro("Oráculo temporariamente indisponível. Usando dados de reverência...");
+                usarDadosDeReverencia();
                 mostrarQuiz();
             }
         }
@@ -252,13 +287,11 @@
         // REGISTRAR ACESSO NO CONTADOR
         async function registrarAcesso() {
             try {
-                // Evitar registrar múltiplos acessos na mesma sessão
                 if (sessionStorage.getItem('acessoRegistradoQuiz')) {
                     console.log("✅ Acesso já registrado nesta sessão");
                     return;
                 }
                 
-                // Verificar se já existe registro para o quiz
                 const checkResponse = await fetch(
                     SUPABASE_URL + '/rest/v1/page_views?page=eq.quiz-pombagiras&select=view_count', 
                     {
@@ -276,7 +309,6 @@
                 const existingData = await checkResponse.json();
                 
                 if (existingData.length > 0) {
-                    // ATUALIZAR contador existente (+1)
                     const currentCount = existingData[0].view_count || 0;
                     const newCount = currentCount + 1;
                     
@@ -304,7 +336,6 @@
                     console.log("✅ Contador atualizado:", newCount);
                     
                 } else {
-                    // CRIAR novo registro para o quiz
                     const insertResponse = await fetch(SUPABASE_URL + '/rest/v1/page_views', {
                         method: 'POST',
                         headers: {
@@ -327,7 +358,6 @@
                     console.log("✅ Contador criado para quiz-pombagiras");
                 }
                 
-                // Marcar como registrado nesta sessão
                 sessionStorage.setItem('acessoRegistradoQuiz', 'true');
                 
             } catch (error) {
@@ -338,17 +368,14 @@
         // CARREGAR CONTADOR DA TELA
         async function carregarContador() {
             try {
-                // Tentar carregar do cache local (para performance)
                 const cachedCount = localStorage.getItem('quizVisitCount');
                 const cacheTimestamp = localStorage.getItem('quizVisitCountTimestamp');
                 const now = Date.now();
                 
-                // Usar cache se tiver menos de 5 minutos
                 if (cachedCount && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 5 * 60 * 1000) {
                     document.getElementById('acesso-numero').textContent = cachedCount;
                     console.log("📊 Contador carregado do cache:", cachedCount);
                     
-                    // Atualizar em segundo plano
                     setTimeout(async () => {
                         await atualizarContador(true);
                     }, 1000);
@@ -356,13 +383,11 @@
                     return;
                 }
                 
-                // Carregar direto do servidor
                 await atualizarContador(false);
                 
             } catch (error) {
                 console.warn("⚠️ Não foi possível carregar contador inicial");
                 
-                // Tentar mostrar número do cache mesmo se antigo
                 const cachedCount = localStorage.getItem('quizVisitCount');
                 if (cachedCount) {
                     document.getElementById('acesso-numero').textContent = cachedCount + '+';
@@ -387,23 +412,18 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Verificar se existe registro para o quiz
                     if (data.length > 0) {
                         const count = data[0].view_count || 0;
                         
-                        // Atualizar display
                         document.getElementById('acesso-numero').textContent = count.toLocaleString();
                         
-                        // Salvar no cache local
                         localStorage.setItem('quizVisitCount', count);
                         localStorage.setItem('quizVisitCountTimestamp', Date.now());
                         
-                        // Animar o contador
                         animarContador();
                         
                         console.log("📊 Contador atualizado do servidor:", count);
                     } else {
-                        // Se não existe registro, criar um
                         console.log("📊 Nenhum registro encontrado, criando...");
                         await registrarAcesso();
                         await atualizarContador(useCacheFallback);
@@ -428,7 +448,6 @@
             const contador = document.getElementById('contador-acessos');
             const numero = document.getElementById('acesso-numero');
             
-            // Pequena animação de destaque
             contador.style.opacity = '0.9';
             contador.style.transform = 'scale(1.05)';
             
@@ -445,81 +464,104 @@
         }
 
         // ============================================
-        // FUNÇÕES DO QUIZ
+        // FUNÇÕES DO QUIZ - NOVA ESTRUTURA
         // ============================================
 
-        // CARREGAR DADOS DO QUIZ DO SUPABASE
+        // CARREGAR DADOS DO QUIZ (NOVA ESTRUTURA)
         async function carregarDadosQuiz() {
-            console.log("📥 Carregando dados do Supabase...");
+            console.log("📥 Carregando dados da nova estrutura...");
+            mostrarMensagem("Consultando o Grimório das 12 Luas...");
             
-            // Carregar pombagiras
-            const resPombagiras = await fetch(SUPABASE_URL + '/rest/v1/pombagiras?select=*', {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY
+            try {
+                // Carregar pombagiras (tabela COMPLETA com 12 entidades)
+                const resPombagiras = await fetch(SUPABASE_URL + '/rest/v1/pombagiras?select=*', {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY
+                    }
+                });
+                
+                if (!resPombagiras.ok) {
+                    throw new Error('Erro ao carregar pombagiras');
                 }
-            });
-            
-            if (!resPombagiras.ok) throw new Error('Erro ao carregar pombagiras');
-            estado.pombagiras = await resPombagiras.json();
-            console.log("✅ Pombagiras carregadas:", estado.pombagiras.length);
-            
-            // Carregar perguntas
-            const resPerguntas = await fetch(SUPABASE_URL + '/rest/v1/perguntas?select=*', {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY
+                
+                estado.pombagiras = await resPombagiras.json();
+                console.log("✅ Pombagiras carregadas:", estado.pombagiras.length);
+                
+                // Carregar perguntas (50 perguntas com níveis)
+                const resPerguntas = await fetch(SUPABASE_URL + '/rest/v1/perguntas?select=*', {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY
+                    }
+                });
+                
+                if (!resPerguntas.ok) {
+                    throw new Error('Erro ao carregar perguntas');
                 }
-            });
-            
-            if (!resPerguntas.ok) throw new Error('Erro ao carregar perguntas');
-            
-            const todasPerguntas = await resPerguntas.json();
-            // Embaralhar e pegar 12 perguntas
-            estado.perguntas = todasPerguntas
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 12);
-            
-            console.log("✅ Perguntas carregadas:", estado.perguntas.length);
+                
+                const todasPerguntas = await resPerguntas.json();
+                
+                // Embaralhar e selecionar 12 perguntas (uma para cada Pombagira)
+                estado.perguntas = todasPerguntas
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 12);
+                
+                console.log("✅ Perguntas carregadas:", estado.perguntas.length);
+                
+            } catch (error) {
+                console.error("❌ Erro ao carregar dados:", error);
+                throw error;
+            }
         }
 
-        // DADOS DE DEMONSTRAÇÃO (fallback)
-        function usarDadosDemo() {
+        // DADOS DE REVERÊNCIA (fallback)
+        function usarDadosDeReverencia() {
+            console.log("🔄 Usando dados de reverência...");
+            
             estado.pombagiras = [
                 {
                     id: 1,
                     nome: "Maria Padilha",
-                    descricao: "Rainha das Encruzilhadas",
+                    descricao: "Rainha das Encruzilhadas, senhora do comando e da sedução.",
+                    comandos: "Comando/Realeza",
+                    dia_reverencia: "Sexta-feira",
                     cores: ["Vermelho", "Dourado", "Preto"],
-                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png"
+                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png",
+                    frase_assinatura: "Na encruzilhada do destino, eu comando!"
                 },
                 {
                     id: 2,
                     nome: "Maria Mulambo", 
-                    descricao: "Pombagira da cura",
-                    cores: ["Branco", "Verde-claro"],
-                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png"
+                    descricao: "Pombagira da cura e humildade. Auxilia em processos de limpeza.",
+                    comandos: "Cura/Humildade",
+                    dia_reverencia: "Segunda-feira",
+                    cores: ["Branco", "Verde-claro", "Cinza"],
+                    imagem_url: "https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png",
+                    frase_assinatura: "Na simplicidade encontramos a verdadeira cura!"
                 }
             ];
             
             estado.perguntas = [
                 {
                     id: 1,
-                    pergunta: "Qual dia é consagrado a Maria Padilha?",
-                    opcoes: ["Segunda", "Quarta", "Sexta", "Domingo"],
+                    pergunta: "Qual dia da semana é consagrado a Maria Padilha?",
+                    opcoes: ["Segunda-feira", "Quarta-feira", "Sexta-feira", "Domingo"],
                     resposta_correta: 3,
-                    nivel_dificuldade: 1
+                    nivel_dificuldade: 1,
+                    explicacao: "Sexta-feira é o dia de maior força de Maria Padilha."
                 },
                 {
                     id: 2, 
-                    pergunta: "Maria Mulambo trabalha com:",
-                    opcoes: ["Guerra", "Cura", "Amor", "Dinheiro"],
+                    pergunta: "Maria Mulambo é conhecida como a Pombagira da:",
+                    opcoes: ["Guerra", "Cura", "Amor", "Riqueza"],
                     resposta_correta: 2,
-                    nivel_dificuldade: 1
+                    nivel_dificuldade: 1,
+                    explicacao: "Ela trabalha com cura física e espiritual."
                 }
             ];
             
-            // Duplicar para ter 12 perguntas
+            // Completar com 12 perguntas
             while (estado.perguntas.length < 12) {
                 estado.perguntas.push(...estado.perguntas.slice(0, 2));
             }
@@ -531,6 +573,17 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('quiz-box').style.display = 'block';
             mostrarPerguntaAtual();
+        }
+
+        // MOSTRAR MENSAGEM DE CARREGAMENTO
+        function mostrarMensagem(texto) {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) {
+                const p = loadingElement.querySelector('p');
+                if (p) {
+                    p.textContent = texto;
+                }
+            }
         }
 
         // MOSTRAR PERGUNTA ATUAL
@@ -594,81 +647,161 @@
             }
         }
 
-        // FINALIZAR QUIZ
+        // ============================================
+        // FINALIZAR QUIZ E MOSTRAR RESULTADO
+        // ============================================
         async function finalizarQuiz() {
+            console.log("🏁 Finalizando quiz...");
             document.getElementById('quiz-box').style.display = 'none';
             
             // Calcular pombagira resultante
             const porcentagem = (estado.pontos / (estado.perguntas.length * 50)) * 100;
             let pombagiraIndex;
             
-            if (porcentagem >= 80) pombagiraIndex = 0;
-            else if (porcentagem >= 50) pombagiraIndex = Math.floor(Math.random() * estado.pombagiras.length);
-            else pombagiraIndex = estado.pombagiras.length - 1;
+            // Lógica de atribuição baseada na pontuação
+            if (porcentagem >= 85) {
+                // Alta pontuação: Pombagiras de comando/proteção
+                pombagiraIndex = Math.floor(Math.random() * 4); // 0-3: Padilha, Quitéria, Navalha, etc.
+            } else if (porcentagem >= 60) {
+                // Média pontuação: Pombagiras equilibradas
+                pombagiraIndex = 4 + Math.floor(Math.random() * 4); // 4-7
+            } else if (porcentagem >= 40) {
+                // Baixa pontuação: Pombagiras de cura/transformação
+                pombagiraIndex = 8 + Math.floor(Math.random() * 4); // 8-11
+            } else {
+                // Muito baixa: Pombagiras específicas
+                pombagiraIndex = Math.min(estado.pombagiras.length - 1, 11);
+            }
             
-            const pombagira = estado.pombagiras[pombagiraIndex] || estado.pombagiras[0];
+            estado.pombagiraSelecionada = estado.pombagiras[pombagiraIndex] || estado.pombagiras[0];
+            estado.dadosPombagira = estado.pombagiraSelecionada;
+            
+            // SALVAR RESULTADO NA NOVA TABELA
+            await salvarResultadoQuiz(estado.pombagiraSelecionada.id);
             
             // Mostrar resultado
-            const resultadoDiv = document.getElementById('resultado');
-            resultadoDiv.innerHTML = `
-                <h2 style="color: #ffd700; margin-bottom: 15px;">Sua Pombagira Protetora é:</h2>
-                <h1 style="color: #c2185b; margin-bottom: 20px;">${pombagira.nome}</h1>
-                
-                <img src="${pombagira.imagem_url}" 
-                     alt="${pombagira.nome}" 
-                     style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 4px solid #c2185b; margin: 20px auto;">
-                
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <p>${pombagira.descricao}</p>
-                    ${pombagira.cores ? `<p style="margin-top: 10px;"><strong>Cores:</strong> ${pombagira.cores.join(', ')}</p>` : ''}
-                </div>
-                
-                <div style="color: #ffd700; font-style: italic; padding: 20px; border-top: 1px solid #444; margin-top: 20px;">
-                    "Que os caminhos se abram para você!"
-                </div>
-                
-                <div style="margin-top: 30px;">
-                    <button class="btn" onclick="reiniciarQuiz()" style="background: linear-gradient(45deg, #4a148c, #c2185b);">
-                        🔄 Fazer Quiz Novamente
-                    </button>
-                </div>
-                
-                <div style="margin-top: 20px; color: #ffd700;">
-                    Sua pontuação: <strong>${estado.pontos} pontos</strong>
-                </div>
-            `;
-            
-            resultadoDiv.style.display = 'block';
-            
-            // Salvar resultado no Supabase
-            await salvarResultado(pombagira.id);
+            mostrarResultado();
             
             // Atualizar contador após finalização
             await atualizarContador(true);
         }
 
-        // SALVAR RESULTADO NO SUPABASE
-        async function salvarResultado(pombagiraId) {
+        // SALVAR RESULTADO DO QUIZ - AJUSTADO PARA NOVA ESTRUTURA
+        async function salvarResultadoQuiz(pombagiraId) {
             try {
-                await fetch(SUPABASE_URL + '/rest/v1/resultados', {
+                console.log("💾 Salvando resultado na NOVA tabela 'resultados'...");
+                
+                // Preparar dados EXATAMENTE como a nova tabela espera
+                const resultadoData = {
+                    session_id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    pombagira_resultado: pombagiraId,
+                    score: estado.pontos
+                    // created_at é automático (DEFAULT NOW())
+                };
+                
+                console.log("📤 Enviando para nova estrutura:", resultadoData);
+                
+                const response = await fetch(SUPABASE_URL + '/rest/v1/resultados', {
                     method: 'POST',
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
                     },
-                    body: JSON.stringify({
-                        session_id: 'sessao_' + Date.now(),
-                        pombagira_resultado: pombagiraId,
-                        score: estado.pontos,
-                        timestamp: new Date().toISOString()
-                    })
+                    body: JSON.stringify(resultadoData)
                 });
                 
-                console.log("✅ Resultado salvo no Supabase");
+                if (response.ok) {
+                    console.log("✅ Resultado salvo com SUCESSO na nova tabela 'resultados'!");
+                } else {
+                    const errorText = await response.text();
+                    console.warn("⚠️ Erro ao salvar:", errorText);
+                }
+                
             } catch (error) {
-                console.warn("⚠️ Não foi possível salvar resultado");
+                console.warn("⚠️ Não foi possível salvar resultado:", error.message);
             }
+        }
+
+        // MOSTRAR RESULTADO COM DETALHES COMPLETOS
+        function mostrarResultado() {
+            const pombagira = estado.dadosPombagira;
+            const resultadoDiv = document.getElementById('resultado');
+            
+            // Formatar arrays para exibição
+            const formatarArray = (arr) => arr ? arr.join(', ') : 'Não especificado';
+            
+            resultadoDiv.innerHTML = `
+                <div style="color: #ffd700; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 5px;">A Gira se Fecha...</h2>
+                    <p>Sua pontuação: <strong>${estado.pontos} pontos</strong></p>
+                </div>
+                
+                <h1 style="color: #c2185b; margin-bottom: 10px; font-size: 2.5rem;">${pombagira.nome}</h1>
+                <p style="color: #ffd700; font-style: italic; margin-bottom: 25px;">"${pombagira.frase_assinatura || 'Que os caminhos se abram para você!'}"</p>
+                
+                ${pombagira.imagem_url ? `
+                <img src="${pombagira.imagem_url}" 
+                     alt="${pombagira.nome}" 
+                     style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 4px solid #c2185b; margin: 20px auto;">
+                ` : ''}
+                
+                <div class="detalhes-pombagira">
+                    <p style="margin-bottom: 15px; color: #ffffff; line-height: 1.6;">${pombagira.descricao || 'Sua protetora espiritual.'}</p>
+                    
+                    ${pombagira.comandos ? `
+                    <div class="detalhes-item">
+                        <span class="detalhes-label">Comandos:</span>
+                        <span class="detalhes-valor">${pombagira.comandos}</span>
+                    </div>
+                    ` : ''}
+                    
+                    ${pombagira.dia_reverencia ? `
+                    <div class="detalhes-item">
+                        <span class="detalhes-label">Dia de Reverência:</span>
+                        <span class="detalhes-valor">${pombagira.dia_reverencia}</span>
+                    </div>
+                    ` : ''}
+                    
+                    ${pombagira.cores && pombagira.cores.length > 0 ? `
+                    <div class="detalhes-item">
+                        <span class="detalhes-label">Cores:</span>
+                        <span class="detalhes-valor">${formatarArray(pombagira.cores)}</span>
+                    </div>
+                    ` : ''}
+                    
+                    ${pombagira.oferendas && pombagira.oferendas.length > 0 ? `
+                    <div class="detalhes-item">
+                        <span class="detalhes-label">Oferendas:</span>
+                        <span class="detalhes-valor">${formatarArray(pombagira.oferendas)}</span>
+                    </div>
+                    ` : ''}
+                    
+                    ${pombagira.signos_associados && pombagira.signos_associados.length > 0 ? `
+                    <div class="detalhes-item">
+                        <span class="detalhes-label">Signos Associados:</span>
+                        <span class="detalhes-valor">${formatarArray(pombagira.signos_associados)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 215, 0, 0.3);">
+                    <button class="btn" onclick="reiniciarQuiz()" style="background: linear-gradient(45deg, #4a148c, #c2185b); margin-bottom: 15px;">
+                        🔄 Fazer Quiz Novamente
+                    </button>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 15px;">
+                        "O Grimório agora é você. Aonde você for, a Legião vai junto."
+                    </p>
+                </div>
+            `;
+            
+            resultadoDiv.style.display = 'block';
+            
+            // Rolar para o resultado
+            setTimeout(() => {
+                resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
         }
 
         // REINICIAR QUIZ
@@ -676,11 +809,10 @@
             estado.perguntaAtual = 0;
             estado.pontos = 0;
             estado.respostas = [];
+            estado.pombagiraSelecionada = null;
+            estado.dadosPombagira = null;
             
             document.getElementById('resultado').style.display = 'none';
-            
-            // Atualizar contador
-            atualizarContador(true);
             
             // Reembaralhar perguntas
             estado.perguntas = estado.perguntas
@@ -688,9 +820,12 @@
                 .slice(0, 12);
             
             mostrarQuiz();
+            
+            // Atualizar contador
+            atualizarContador(true);
         }
 
-        // MOSTRAR MENSAGEM DE ERRO
+        // MOSTRAR ERRO
         function mostrarErro(mensagem) {
             const errorDiv = document.getElementById('error-msg');
             errorDiv.textContent = mensagem;
@@ -705,14 +840,16 @@
         // INICIAR QUANDO A PÁGINA CARREGAR
         document.addEventListener('DOMContentLoaded', iniciarQuiz);
         
-        // Atualizar contador periodicamente (a cada 5 minutos)
+        // Atualizar contador periodicamente
         setInterval(async () => {
             await atualizarContador(true);
         }, 5 * 60 * 1000);
         
-        // Teste rápido para debug
-        console.log("✨ Quiz das Pombagiras carregado!");
-        console.log("🔗 Supabase URL:", SUPABASE_URL);
+        // Debug info
+        console.log("✨ Quiz das 12 Pombagiras - Versão Atualizada");
+        console.log("🔗 Conectado ao Supabase");
+        console.log("📊 Contador de visitas ativo");
+        console.log("💾 Sistema de resultados configurado para NOVA estrutura");
     </script>
 </body>
 </html>
