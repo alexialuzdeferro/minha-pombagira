@@ -1,526 +1,964 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Crown, Sword, Heart, Moon, Flame, Star } from 'lucide-react';
-
-const PombagiraQuiz = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState({});
-  const [showResult, setShowResult] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isCorrect, setIsCorrect] = useState(null);
-  const [answeredQuestions, setAnsweredQuestions] = useState(0);
-
-  const pombagiras = {
-    'Maria Padilha': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
-      cores: 'Vermelho, Dourado, Preto',
-      dia: 'Sexta-feira',
-      lua: 'Lua Cheia',
-      signos: 'Leão, Escorpião',
-      simbologia: 'Coroa, Cetro, Espelho, Rosas Vermelhas',
-      utensilio: 'Espada, Espelho, Taça de Cristal',
-      mensagem: 'Você carrega a energia do comando e da realeza! Maria Padilha te coroa como líder nata, sedutora e poderosa. Sua presença comanda respeito e admiração.'
-    },
-    'Maria Mulambo': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png',
-      cores: 'Branco, Verde-claro, Cinza',
-      dia: 'Segunda ou Quarta-feira',
-      lua: 'Lua Minguante',
-      signos: 'Virgem, Câncer',
-      simbologia: 'Trapos Limpos, Vasos de Barro, Ervas',
-      utensilio: 'Cesto de Vime, Moringa, Panos Brancos',
-      mensagem: 'Sua alma é pura e compassiva! Maria Mulambo te abençoa com o dom da cura e da humildade. Você encontra beleza na simplicidade e força na resiliência.'
-    },
-    'Maria Quitéria': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_quiteria.png',
-      cores: 'Vermelho, Marrom, Preto',
-      dia: 'Terça-feira',
-      lua: 'Lua Crescente',
-      signos: 'Áries, Escorpião',
-      simbologia: 'Espada, Escudo, Armadura, Bandeira',
-      utensilio: 'Espada, Facão, Bandeira Vermelha',
-      mensagem: 'Você é uma guerreira destemida! Maria Quitéria te protege nas batalhas da vida. Coragem, determinação e proteção são suas maiores armas.'
-    },
-    'Rosa Caveira': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/rosa_caveira.png',
-      cores: 'Preto, Vermelho-sangue, Roxo',
-      dia: 'Sábado',
-      lua: 'Lua Nova ou Cheia',
-      signos: 'Escorpião, Plutão',
-      simbologia: 'Caveira, Rosa, Balança, Foice',
-      utensilio: 'Foice, Espelho Preto, Rosário de Ossos',
-      mensagem: 'Você compreende os ciclos da vida e morte! Rosa Caveira te guia na transformação e justiça. Sua intensidade é poder puro e verdade absoluta.'
-    },
-    'Dama da Noite': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/dama_noite.png',
-      cores: 'Preto, Roxo, Azul-escuro',
-      dia: 'Sexta-feira (noite)',
-      lua: 'Lua Negra',
-      signos: 'Escorpião, Peixes',
-      simbologia: 'Lua Crescente, Olho, Chave, Morcego',
-      utensilio: 'Chave, Espelho Negro, Livro de Segredos',
-      mensagem: 'Os mistérios do universo sussurram em seus ouvidos! Dama da Noite te revela o oculto. Você enxerga além do véu e guarda segredos profundos.'
-    },
-    'Sete Saias': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/sete_saias.png',
-      cores: 'Multicolorido (Vermelho, Rosa, Amarelo)',
-      dia: 'Quinta ou Domingo',
-      lua: 'Lua Crescente ou Cheia',
-      signos: 'Sagitário, Leão',
-      simbologia: 'Saias Coloridas, Tambor, Máscara',
-      utensilio: 'Tambor, Leque, Fitas Coloridas',
-      mensagem: 'Alegria é sua essência! Sete Saias dança em sua vida trazendo movimento e paixão. Você irradia vida, cor e intensidade contagiante.'
-    },
-    'Pombagira Cigana': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/cigana.png',
-      cores: 'Vermelho, Dourado, Verde',
-      dia: 'Quarta-feira',
-      lua: 'Lua Cheia',
-      signos: 'Sagitário, Touro',
-      simbologia: 'Carruagem, Cartas, Cristais, Rodas',
-      utensilio: 'Baralho Cigano, Sinos, Moedas',
-      mensagem: 'Liberdade corre em suas veias! Pombagira Cigana te abençoa com prosperidade e independência. Você não conhece correntes, apenas horizontes.'
-    },
-    'Maria Navalha': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_navalha.png',
-      cores: 'Preto, Vermelho, Prata',
-      dia: 'Terça ou Sexta-feira (noite)',
-      lua: 'Lua Minguante',
-      signos: 'Escorpião, Gêmeos',
-      simbologia: 'Navalha, Chave, Carta de Baralho',
-      utensilio: 'Navalha, Dado, Lenço Vermelho',
-      mensagem: 'A malandragem é sua sabedoria! Maria Navalha te protege nas ruas da vida. Astúcia, adaptação e proteção são suas companheiras fiéis.'
-    },
-    'Pombagira da Praia': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/praia.png',
-      cores: 'Azul, Branco, Prata',
-      dia: 'Quinta ou Segunda-feira',
-      lua: 'Lua Cheia ou Crescente',
-      signos: 'Câncer, Peixes',
-      simbologia: 'Concha, Onda, Pérola, Rede',
-      utensilio: 'Concha, Jarro com Água do Mar, Leque',
-      mensagem: 'Suas emoções são mar profundo! Pombagira da Praia te purifica e renova. Você compreende as marés do coração e traz calma aos tormentos.'
-    },
-    'Maria Farrapo': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_farrapo.png',
-      cores: 'Branco Sujo, Cinza, Lilás',
-      dia: 'Segunda-feira',
-      lua: 'Lua Minguante',
-      signos: 'Virgem, Peixes',
-      simbologia: 'Pano Rasgado, Nó, Labirinto',
-      utensilio: 'Pano Branco, Cordão com Nós, Incenso de Lavanda',
-      mensagem: 'Você compreende o caos e dele tira ordem! Maria Farrapo te cura profundamente. Das ruínas mentais, você ergue clareza e sanidade.'
-    },
-    'Pombagira Menina': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/menina.png',
-      cores: 'Rosa, Branco, Azul-claro',
-      dia: 'Domingo',
-      lua: 'Lua Nova',
-      signos: 'Áries, Libra',
-      simbologia: 'Boneca, Flor, Borboleta, Sino',
-      utensilio: 'Boneca, Sino, Balão',
-      mensagem: 'Renovação é seu presente! Pombagira Menina te abençoa com recomeços. Inocência e sabedoria ancestral se unem em você para trazer esperança.'
-    },
-    'Pombagira da Figueira': {
-      image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/figueira.png',
-      cores: 'Marrom, Verde-escuro, Preto',
-      dia: 'Sábado',
-      lua: 'Lua Minguante',
-      signos: 'Touro, Capricórnio',
-      simbologia: 'Raízes, Árvore, Semente, Vasos de Barro',
-      utensilio: 'Vaso de Barro, Sementes, Enxada',
-      mensagem: 'Suas raízes são profundas e fortes! Pombagira da Figueira te conecta aos ancestrais. Você é a ponte entre passado e presente, tradição viva.'
-    }
-  };
-
-  const questions = [
-    {
-      question: "Qual Pombagira é sincretizada com a Rainha de Sabá e Maria Madalena?",
-      options: ["Maria Mulambo", "Maria Padilha", "Sete Saias", "Pombagira Cigana"],
-      correct: "Maria Padilha",
-      pombagira: "Maria Padilha"
-    },
-    {
-      question: "Qual entidade tem como utensílio principal o espelho negro e a chave?",
-      options: ["Rosa Caveira", "Dama da Noite", "Maria Navalha", "Maria Farrapo"],
-      correct: "Dama da Noite",
-      pombagira: "Dama da Noite"
-    },
-    {
-      question: "Em que fase da lua Maria Mulambo atua com maior poder de cura?",
-      options: ["Lua Cheia", "Lua Nova", "Lua Minguante", "Lua Crescente"],
-      correct: "Lua Minguante",
-      pombagira: "Maria Mulambo"
-    },
-    {
-      question: "Qual Pombagira é invocada especificamente para batalhas espirituais e proteção guerreira?",
-      options: ["Maria Padilha", "Maria Quitéria", "Maria Navalha", "Rosa Caveira"],
-      correct: "Maria Quitéria",
-      pombagira: "Maria Quitéria"
-    },
-    {
-      question: "Que utensílio é característico de Rosa Caveira e simboliza transformação?",
-      options: ["Espada", "Foice", "Navalha", "Tridente"],
-      correct: "Foice",
-      pombagira: "Rosa Caveira"
-    },
-    {
-      question: "Qual é o dia propício para reverenciar a Pombagira Cigana?",
-      options: ["Segunda-feira", "Terça-feira", "Quarta-feira", "Sexta-feira"],
-      correct: "Quarta-feira",
-      pombagira: "Pombagira Cigana"
-    },
-    {
-      question: "Quantas saias usa a Pombagira da alegria e intensidade?",
-      options: ["Três", "Cinco", "Sete", "Nove"],
-      correct: "Sete",
-      pombagira: "Sete Saias"
-    },
-    {
-      question: "Qual Pombagira tem como locais de oferenda hospitais psiquiátricos e encruzilhadas silenciosas?",
-      options: ["Maria Mulambo", "Maria Farrapo", "Pombagira Menina", "Pombagira da Praia"],
-      correct: "Maria Farrapo",
-      pombagira: "Maria Farrapo"
-    },
-    {
-      question: "Que símbolos são associados à Pombagira da Praia?",
-      options: ["Caveira e rosa", "Concha e onda", "Navalha e dado", "Coroa e cetro"],
-      correct: "Concha e onda",
-      pombagira: "Pombagira da Praia"
-    },
-    {
-      question: "Qual entidade trabalha com a energia de renovação e inocência?",
-      options: ["Maria Mulambo", "Pombagira Menina", "Sete Saias", "Maria Farrapo"],
-      correct: "Pombagira Menina",
-      pombagira: "Pombagira Menina"
-    },
-    {
-      question: "Em que fase lunar a Dama da Noite atinge seu mistério máximo?",
-      options: ["Lua Cheia", "Lua Nova", "Lua Negra", "Lua Crescente"],
-      correct: "Lua Negra",
-      pombagira: "Dama da Noite"
-    },
-    {
-      question: "Qual Pombagira é associada aos signos de Touro e Capricórnio?",
-      options: ["Maria Padilha", "Pombagira Cigana", "Pombagira da Figueira", "Maria Quitéria"],
-      correct: "Pombagira da Figueira",
-      pombagira: "Pombagira da Figueira"
-    },
-    {
-      question: "Que cor NÃO é típica de Maria Navalha?",
-      options: ["Preto", "Vermelho", "Prata", "Dourado"],
-      correct: "Dourado",
-      pombagira: "Maria Navalha"
-    },
-    {
-      question: "Qual entidade tem como simbologia principal raízes, árvore e sementes?",
-      options: ["Maria Mulambo", "Pombagira da Figueira", "Maria Farrapo", "Pombagira da Praia"],
-      correct: "Pombagira da Figueira",
-      pombagira: "Pombagira da Figueira"
-    },
-    {
-      question: "Qual Pombagira trabalha especificamente com cemitérios e energia de justiça implacável?",
-      options: ["Dama da Noite", "Rosa Caveira", "Maria Quitéria", "Maria Navalha"],
-      correct: "Rosa Caveira",
-      pombagira: "Rosa Caveira"
-    }
-  ];
-
-  const playSound = (isCorrect) => {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz das Pombagiras - O Mistério das Giras</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Gothic+A1:wght@300;400;500;600&display=swap');
+        
+        * {
+            font-family: 'Gothic A1', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a0b0b 0%, #2d0b14 25%, #1b0b1a 50%, #0b0b1a 75%, #000000 100%);
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+        
+        h1, h2, h3, .font-gothic {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+        
+        .card {
+            background: rgba(20, 0, 10, 0.85);
+            border: 1px solid #5a0b1e;
+            box-shadow: 0 0 30px rgba(139, 0, 35, 0.3),
+                        inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .blood-border {
+            border: 2px solid #8b0023;
+            box-shadow: 0 0 15px rgba(139, 0, 35, 0.4);
+        }
+        
+        .purple-glow {
+            border: 1px solid #4a0b4a;
+            box-shadow: 0 0 20px rgba(75, 0, 75, 0.4);
+        }
+        
+        .dark-gold {
+            color: #b8860b;
+            text-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
+        }
+        
+        .blood-red {
+            color: #8b0000;
+        }
+        
+        .velvet-purple {
+            color: #4b0082;
+        }
+        
+        .candle-flicker {
+            animation: flicker 3s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .smoke-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .smoke-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
+            z-index: 1;
+        }
+        
+        .option-btn {
+            background: linear-gradient(145deg, rgba(43, 0, 15, 0.9), rgba(26, 0, 13, 0.9));
+            border: 1px solid #5a0b1e;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-btn:hover {
+            background: linear-gradient(145deg, rgba(91, 0, 35, 0.9), rgba(43, 0, 15, 0.9));
+            border-color: #8b0023;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(139, 0, 35, 0.4);
+        }
+        
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+        
+        .option-btn:hover::before {
+            left: 100%;
+        }
+        
+        .skull-decoration {
+            position: absolute;
+            opacity: 0.05;
+            font-size: 8rem;
+            z-index: 0;
+        }
+        
+        .candle {
+            position: relative;
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(to bottom, #8b4513, #a0522d);
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+        
+        .candle::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 15px;
+            background: linear-gradient(to bottom, #ff4500, #ff8c00);
+            border-radius: 50% 50% 20% 20%;
+            animation: flame 2s infinite alternate;
+        }
+        
+        @keyframes flame {
+            0%, 100% { 
+                box-shadow: 0 0 10px #ff4500,
+                            0 0 20px #ff4500,
+                            0 0 30px #ff4500;
+                height: 15px;
+            }
+            50% { 
+                box-shadow: 0 0 15px #ff8c00,
+                            0 0 30px #ff8c00,
+                            0 0 45px #ff8c00;
+                height: 20px;
+            }
+        }
+        
+        .rose-petal {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #8b0000, #4a0000);
+            border-radius: 50% 0 50% 50%;
+            opacity: 0.3;
+            animation: fall 20s linear infinite;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .gothic-title {
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.7),
+                         0 0 20px rgba(139, 0, 0, 0.5),
+                         0 0 30px rgba(139, 0, 0, 0.3);
+            letter-spacing: 3px;
+        }
+        
+        .vintage-paper {
+            background: linear-gradient(to bottom, #2c1810 0%, #1a0f0a 100%);
+            border: 1px solid #5d4037;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .vintage-paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(90deg, transparent 95%, rgba(139, 0, 0, 0.1) 100%),
+                linear-gradient(0deg, transparent 95%, rgba(139, 0, 0, 0.1) 100%);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+        
+        /* Contador de Visitas */
+        .view-counter {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            z-index: 1000;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .view-counter:hover {
+            opacity: 1;
+        }
+        
+        .view-counter-content {
+            background: rgba(10, 0, 5, 0.6);
+            border: 1px solid #5a0b1e;
+            border-radius: 8px;
+            padding: 6px 12px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .view-counter-text {
+            color: #b8860b;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Gothic A1', sans-serif;
+        }
+        
+        .view-counter-number {
+            background: linear-gradient(45deg, #8b0000, #4a0b4a);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            min-width: 40px;
+            text-align: center;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .view-counter-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(184, 134, 11, 0.3);
+            border-top: 2px solid #b8860b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Loading State */
+        .loading-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #b8860b;
+        }
+        
+        .loading-candle {
+            position: relative;
+            width: 30px;
+            height: 60px;
+            background: linear-gradient(to bottom, #8b4513, #a0522d);
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-candle::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 20px;
+            background: linear-gradient(to bottom, #ff4500, #ff8c00);
+            border-radius: 50% 50% 20% 20%;
+            animation: flame 2s infinite alternate;
+        }
+    </style>
+</head>
+<body class="text-gray-300 relative overflow-x-hidden">
+    <!-- Pétalas de rosa caindo -->
+    <div id="petals"></div>
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    <!-- Crânios decorativos -->
+    <div class="skull-decoration top-10 left-10"><i class="fas fa-skull"></i></div>
+    <div class="skull-decoration top-10 right-10"><i class="fas fa-skull"></i></div>
+    <div class="skull-decoration bottom-10 left-10"><i class="fas fa-skull"></i></div>
+    <div class="skull-decoration bottom-10 right-10"><i class="fas fa-skull"></i></div>
     
-    oscillator.frequency.value = isCorrect ? 800 : 400;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  };
-
-  const handleAnswer = (answer) => {
-    const correct = answer === questions[currentQuestion].correct;
-    setSelectedAnswer(answer);
-    setIsCorrect(correct);
-    playSound(correct);
-
-    if (correct) {
-      const pombagiraName = questions[currentQuestion].pombagira;
-      setScore(prev => ({
-        ...prev,
-        [pombagiraName]: (prev[pombagiraName] || 0) + 1
-      }));
-    }
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-        setIsCorrect(null);
-        setAnsweredQuestions(answeredQuestions + 1);
-      } else {
-        setShowResult(true);
-      }
-    }, 1500);
-  };
-
-  const getQueenPombagira = () => {
-    let maxScore = 0;
-    let queen = 'Maria Padilha';
-    
-    Object.entries(score).forEach(([name, points]) => {
-      if (points > maxScore) {
-        maxScore = points;
-        queen = name;
-      }
-    });
-    
-    return queen;
-  };
-
-  if (showResult) {
-    const queen = getQueenPombagira();
-    const queenData = pombagiras[queen];
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-red-900 to-black p-4 flex items-center justify-center">
-        <div className="max-w-2xl w-full">
-          <div className="bg-gradient-to-br from-purple-800/40 to-red-800/40 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-yellow-500/50 p-8 animate-pulse-slow">
-            <div className="flex justify-center mb-6">
-              <Crown className="w-16 h-16 text-yellow-400 animate-bounce" />
+    <!-- Contador de Visitas -->
+    <div class="view-counter">
+        <div class="view-counter-content">
+            <div class="view-counter-text">
+                <i class="fas fa-eye text-xs"></i>
+                <span>Visitas:</span>
+                <div id="viewCount" class="view-counter-number">
+                    <div class="view-counter-spinner"></div>
+                </div>
             </div>
-            
-            <h1 className="text-4xl font-bold text-center text-yellow-400 mb-4 drop-shadow-lg">
-              Sua Pombagira Rainha!
-            </h1>
-            
-            <div className="bg-black/50 rounded-2xl p-6 mb-6 border-2 border-red-500/50">
-              <img 
-                src={queenData.image} 
-                alt={queen}
-                className="w-full h-64 object-contain mb-4 drop-shadow-2xl"
-              />
-              <h2 className="text-3xl font-bold text-center text-red-400 mb-4">
-                {queen}
-              </h2>
-            </div>
-
-            <div className="space-y-4 bg-black/30 rounded-xl p-6 border border-yellow-500/30">
-              <div className="flex items-start gap-3">
-                <Flame className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Cores:</p>
-                  <p className="text-white">{queenData.cores}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Moon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Lua:</p>
-                  <p className="text-white">{queenData.lua}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Star className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Dia Propício:</p>
-                  <p className="text-white">{queenData.dia}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Sparkles className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Signos:</p>
-                  <p className="text-white">{queenData.signos}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Crown className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Simbologia:</p>
-                  <p className="text-white">{queenData.simbologia}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Sword className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-yellow-300 font-semibold">Utensílios:</p>
-                  <p className="text-white">{queenData.utensilio}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 bg-gradient-to-r from-red-900/50 to-purple-900/50 rounded-xl p-6 border-2 border-yellow-400/50">
-              <Heart className="w-8 h-8 text-red-400 mx-auto mb-3" />
-              <p className="text-white text-center italic leading-relaxed">
-                {queenData.mensagem}
-              </p>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-yellow-300 text-lg font-semibold mb-2">
-                Você acertou {Object.values(score).reduce((a, b) => a + b, 0)} de 15 perguntas
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-gradient-to-r from-red-600 to-purple-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg"
-              >
-                Refazer Quiz
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-red-900 p-4 flex items-center justify-center">
-      <div className="max-w-3xl w-full">
-        <div className="bg-gradient-to-br from-purple-800/30 to-red-800/30 backdrop-blur-md rounded-3xl shadow-2xl border border-purple-500/50 overflow-hidden">
-          
-          {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-purple-600 p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-6 h-6 text-yellow-400 animate-pulse" />
-                  <span className="text-white font-bold text-lg">
-                    Pergunta {currentQuestion + 1}/{questions.length}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Crown className="w-6 h-6 text-yellow-400" />
-                  <span className="text-white font-bold">
-                    {answeredQuestions} acertos
-                  </span>
-                </div>
-              </div>
-              
-              <div className="bg-white/20 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-yellow-400 to-red-400 h-full transition-all duration-500 ease-out"
-                  style={{width: `${((currentQuestion + 1) / questions.length) * 100}%`}}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Question */}
-          <div className="p-8">
-            <div className="bg-black/40 rounded-2xl p-6 mb-8 border-2 border-purple-500/50 shadow-xl">
-              <div className="flex justify-center mb-4">
-                <Sparkles className="w-10 h-10 text-yellow-400 animate-spin-slow" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white text-center leading-relaxed">
-                {questions[currentQuestion].question}
-              </h2>
-            </div>
-
-            {/* Options */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {questions[currentQuestion].options.map((option, index) => {
-                let bgColor = 'bg-gradient-to-r from-purple-600/50 to-red-600/50 hover:from-purple-500/70 hover:to-red-500/70';
-                let borderColor = 'border-purple-400/50';
-                let transform = 'hover:scale-105';
-
-                if (selectedAnswer === option) {
-                  if (isCorrect) {
-                    bgColor = 'bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse';
-                    borderColor = 'border-green-400';
-                    transform = 'scale-105';
-                  } else {
-                    bgColor = 'bg-gradient-to-r from-red-600 to-red-800 animate-shake';
-                    borderColor = 'border-red-400';
-                    transform = 'scale-95';
-                  }
-                }
-
-                if (selectedAnswer && option === questions[currentQuestion].correct && !isCorrect) {
-                  bgColor = 'bg-gradient-to-r from-green-500 to-emerald-600';
-                  borderColor = 'border-green-400';
-                }
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => !selectedAnswer && handleAnswer(option)}
-                    disabled={selectedAnswer !== null}
-                    className={`${bgColor} ${transform} border-2 ${borderColor} text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg disabled:cursor-not-allowed backdrop-blur-sm`}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedAnswer && (
-              <div className="mt-6 text-center">
-                <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full ${isCorrect ? 'bg-green-500/30' : 'bg-red-500/30'} border-2 ${isCorrect ? 'border-green-400' : 'border-red-400'}`}>
-                  {isCorrect ? (
-                    <>
-                      <Sparkles className="w-6 h-6 text-green-400 animate-spin" />
-                      <span className="text-green-200 font-bold text-xl">Correto! ✨</span>
-                    </>
-                  ) : (
-                    <>
-                      <Flame className="w-6 h-6 text-red-400" />
-                      <span className="text-red-200 font-bold text-xl">Incorreto! 🔥</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Decorative Elements */}
-        <div className="mt-6 text-center">
-          <p className="text-yellow-300 text-sm font-semibold flex items-center justify-center gap-2">
-            <Moon className="w-5 h-5 animate-pulse" />
-            Descubra qual Pombagira reina em seu caminho
-            <Star className="w-5 h-5 animate-pulse" />
-          </p>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.9; transform: scale(1.02); }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </div>
-  );
-};
+    
+    <div id="quiz-app" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <!-- Tela de loading -->
+        <div class="loading-screen">
+            <div class="loading-candle"></div>
+            <h2 class="font-gothic text-xl mb-2">Iniciando Ritual...</h2>
+            <p class="text-gray-400">Carregando mistérios ancestrais</p>
+        </div>
+    </div>
 
-export default PombagiraQuiz;
+    <script>
+        // ==============================
+        // CONFIGURAÇÕES DO CONTADOR
+        // ==============================
+        const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
+        const PAGE_NAME = 'quiz-pombagira-gotico'; // NOME ATUALIZADO
+        
+        // ==============================
+        // FUNÇÃO DO CONTADOR SIMPLIFICADA
+        // ==============================
+        async function updateViewCounter() {
+            try {
+                // Primeiro, mostrar um número inicial do localStorage
+                let localCount = localStorage.getItem('quiz_pombagira_views');
+                if (!localCount) {
+                    localCount = '1';
+                    localStorage.setItem('quiz_pombagira_views', localCount);
+                }
+                
+                // Mostrar número do localStorage imediatamente
+                const viewCountElement = document.getElementById('viewCount');
+                if (viewCountElement) {
+                    viewCountElement.innerHTML = parseInt(localCount).toLocaleString();
+                }
+                
+                // Tentar atualizar no Supabase (mais simples)
+                try {
+                    // Primeiro buscar o valor atual
+                    const getResponse = await fetch(
+                        `${SUPABASE_URL}/rest/v1/page_views?page=eq.${encodeURIComponent(PAGE_NAME)}&select=view_count`,
+                        {
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`
+                            }
+                        }
+                    );
+                    
+                    if (getResponse.ok) {
+                        const data = await getResponse.json();
+                        let newCount = 1;
+                        
+                        if (data && data.length > 0) {
+                            newCount = (data[0].view_count || 0) + 1;
+                        }
+                        
+                        // Atualizar no Supabase
+                        const updateResponse = await fetch(
+                            `${SUPABASE_URL}/rest/v1/page_views?page=eq.${encodeURIComponent(PAGE_NAME)}`,
+                            {
+                                method: 'PATCH',
+                                headers: {
+                                    'apikey': SUPABASE_KEY,
+                                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ 
+                                    view_count: newCount,
+                                    updated_at: new Date().toISOString()
+                                })
+                            }
+                        );
+                        
+                        if (updateResponse.ok || updateResponse.status === 204) {
+                            // Atualizar display
+                            if (viewCountElement) {
+                                viewCountElement.innerHTML = newCount.toLocaleString();
+                            }
+                            // Salvar no localStorage
+                            localStorage.setItem('quiz_pombagira_views', newCount.toString());
+                        }
+                    }
+                } catch (supabaseError) {
+                    // Se falhar, incrementar o localStorage
+                    const currentCount = parseInt(localStorage.getItem('quiz_pombagira_views') || '1');
+                    const newCount = currentCount + 1;
+                    localStorage.setItem('quiz_pombagira_views', newCount.toString());
+                    
+                    if (viewCountElement) {
+                        viewCountElement.innerHTML = newCount.toLocaleString();
+                    }
+                }
+                
+            } catch (error) {
+                // Fallback final - usar localStorage
+                const localCount = localStorage.getItem('quiz_pombagira_views') || '1';
+                const viewCountElement = document.getElementById('viewCount');
+                if (viewCountElement) {
+                    viewCountElement.innerHTML = parseInt(localCount).toLocaleString();
+                }
+            }
+        }
+
+        // ==============================
+        // DADOS DAS POMBAGIRAS
+        // ==============================
+        const pombagiras = {
+            'Maria Padilha': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
+                cores: 'Vermelho Sangue, Ouro Envelhecido, Ébano',
+                dia: 'Sexta-feira à Meia-Noite',
+                lua: 'Lua Cheia Sangrenta',
+                signos: 'Leão, Escorpião',
+                simbologia: 'Coroa de Espinhos, Cetro Negro, Espelho Quebrado, Rosas Murchas',
+                utensilio: 'Espada Enferrujada, Espelho Negro, Taça de Cristal Sombrio',
+                elemento: 'Comando & Melancolia Real',
+                mensagem: 'Você carrega o peso da coroa e o mistério do trono solitário! Maria Padilha te coroa com espinhos dourados, onde poder e solidão se entrelaçam em um eterno crepúsculo.'
+            },
+            'Maria Mulambo': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_mulambo.png',
+                cores: 'Branco Fantasma, Verde Pálido, Cinza Túmulo',
+                dia: 'Segunda-feira Chuvosa',
+                lua: 'Lua Minguante',
+                signos: 'Virgem, Câncer',
+                simbologia: 'Trapos Envelhecidos, Vasos de Barro Quebrados, Ervas Secas',
+                utensilio: 'Cesto de Vime Gastado, Moringa de Água Parada, Panos Brancos Manchados',
+                elemento: 'Cura & Desespero Humilde',
+                mensagem: 'Sua alma é um remendo no tecido do mundo! Maria Mulambo te abençoa com o dom da cura silenciosa, onde cada ferida é uma história escrita em pano gasto.'
+            },
+            'Maria Quitéria': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_quiteria.png',
+                cores: 'Vermelho Batalha, Marrom Terra, Preto Açoite',
+                dia: 'Terça-feira de Tempestade',
+                lua: 'Lua Crescente Sangrenta',
+                signos: 'Áries, Escorpião',
+                simbologia: 'Espada Noturna, Escudo Rachado, Armadura Enferrujada, Bandeira em Chamas',
+                utensilio: 'Espada de Batalha, Facão Manchado, Bandeira Vermelha Rasgada',
+                elemento: 'Guerra & Proteção Desesperada',
+                mensagem: 'Você é uma fortaleza em ruínas! Maria Quitéria te protege nas batalhas noturnas da alma, onde cada cicatriz é uma medalha de sobrevivência.'
+            },
+            'Rosa Caveira': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/rosa_caveira.png',
+                cores: 'Preto Profundo, Vermelho-Cadáver, Roxo Luto',
+                dia: 'Sábado de Finados',
+                lua: 'Lua Negra',
+                signos: 'Escorpião, Plutão',
+                simbologia: 'Caveira Ornamentada, Rosa Negra, Balança Desequilibrada, Foice da Morte',
+                utensilio: 'Foice Prateada, Espelho do Além, Rosário de Ossos Humanos',
+                elemento: 'Justiça & Morte Inevitável',
+                mensagem: 'Você dança com os fantasmas da justiça! Rosa Caveira te guia pelos corredores do submundo, onde cada ossada conta uma verdade silenciada.'
+            },
+            'Dama da Noite': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/dama_noite.png',
+                cores: 'Preto Absoluto, Roxo Profundo, Azul Meia-Noite',
+                dia: 'Sexta-feira às 3h',
+                lua: 'Lua Nova Negra',
+                signos: 'Escorpião, Peixes',
+                simbologia: 'Lua Negra, Olho que Tudo Vê, Chave do Abismo, Morcego Noturno',
+                utensilio: 'Chave Antiga, Espelho do Vácuo, Livro de Segredos Proibidos',
+                elemento: 'Mistério & Oculto Proibido',
+                mensagem: 'Os segredos do abismo sussurram seu nome! Dama da Noite te revela portas que jamais deveriam ser abertas, em um labirinto de sombras e verdades amaldiçoadas.'
+            },
+            'Sete Saias': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/sete_saias.png',
+                cores: 'Vermelho Paixão, Rosa Desbotado, Amarelo Ocre',
+                dia: 'Quinta-feira de Carnaval',
+                lua: 'Lua de Sangue',
+                signos: 'Sagitário, Leão',
+                simbologia: 'Saias Rotas, Tambor Ancestral, Máscara de Porcelana Quebrada',
+                utensilio: 'Tambor do Ritual, Leque de Penas Negras, Fitas Desfiadas',
+                elemento: 'Alegria Macabra & Intensidade Fúnebre',
+                mensagem: 'Sua alegria é um requiem dançante! Sete Saias gira em seu funeral pessoal, onde cada riso ecoa em câmaras vazias e cada passo é uma memória.'
+            },
+            'Pombagira Cigana': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/cigana.png',
+                cores: 'Vermelho Romântico, Dourado Desbotado, Verde Musgo',
+                dia: 'Quarta-feira de Feira',
+                lua: 'Lua Errante',
+                signos: 'Sagitário, Touro',
+                simbologia: 'Carruagem Fantasma, Cartas do Destino, Cristais Turvos, Rodas Quebradas',
+                utensilio: 'Baralho Cigano Manchado, Sinos Silenciosos, Moedas Sem Valor',
+                elemento: 'Liberdade & Prosperidade Perdida',
+                mensagem: 'Seu destino é uma estrada sem fim! Pombagira Cigana te abençoa com a maldição da liberdade eterna, onde cada horizonte é uma despedida.'
+            },
+            'Maria Navalha': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_navalha.png',
+                cores: 'Preto Asfalto, Vermelho Farol, Prata Enferrujada',
+                dia: 'Terça-feira de Neblina',
+                lua: 'Lua de Faca',
+                signos: 'Escorpião, Gêmeos',
+                simbologia: 'Navalha Afiada, Chave do Beco, Carta de Baralho Suja',
+                utensilio: 'Navalha Sangrenta, Dado Viciado, Lenço Vermelho Rasgado',
+                elemento: 'Malandragem & Rua Desertada',
+                mensagem: 'A escuridão das ruas é seu único abrigo! Maria Navalha te protege nos labirintos urbanos, onde cada sombra esconde uma faca e cada beco, uma verdade.'
+            },
+            'Pombagira da Praia': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/praia.png',
+                cores: 'Azul Tempestade, Branco Fantasma, Prata Afogada',
+                dia: 'Segunda-feira de Maré Alta',
+                lua: 'Lua das Marés',
+                signos: 'Câncer, Peixes',
+                simbologia: 'Concha Vazia, Onda Final, Pérola Perdida, Rede Rasgada',
+                utensilio: 'Concha Quebrada, Jarro com Água Salgada, Leque Molhado',
+                elemento: 'Emoção Afogada & Limpeza do Mar',
+                mensagem: 'Suas lágrimas são oceanos particulares! Pombagira da Praia te purifica com água salgada, onde cada onda carrega memórias afogadas e cada concha, um segredo.'
+            },
+            'Maria Farrapo': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_farrapo.png',
+                cores: 'Branco Sujo de Terra, Cinza Névoa, Lilás Desbotado',
+                dia: 'Domingo Chuvoso',
+                lua: 'Lua da Loucura',
+                signos: 'Virgem, Peixes',
+                simbologia: 'Pano Ensanguentado, Nó Cego, Labirinto Sem Saída',
+                utensilio: 'Pano Branco Manchado, Cordão com Nós Inextricáveis, Incenso de Lavanda Queimada',
+                elemento: 'Sanidade Perdida & Caos Mental',
+                mensagem: 'Seu pensamento é um caleidoscópio quebrado! Maria Farrapo te cura com fios desfeitos, transformando o caos em padrões de beleza tortuosa.'
+            },
+            'Pombagira Menina': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/menina.png',
+                cores: 'Rosa Pálido, Branco Fantasma, Azul Esquecido',
+                dia: 'Domingo de Manhã Chuvosa',
+                lua: 'Lua Nova Triste',
+                signos: 'Áries, Libra',
+                simbologia: 'Boneca Quebrada, Flor Murcha, Borboleta Presa, Sino Sem Som',
+                utensilio: 'Boneca de Porcelana Rachada, Sino de Bronze, Balão Esvaziado',
+                elemento: 'Renovação Falhada & Inocência Perdida',
+                mensagem: 'Sua pureza é um espelho quebrado! Pombagira Menina te abençoa com recomeços imperfeitos, onde cada tentativa é um eco de algo que nunca mais será.'
+            },
+            'Pombagira da Figueira': {
+                image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/figueira.png',
+                cores: 'Marrom Terra, Verde Sombrio, Preto Raiz',
+                dia: 'Sábado de Temporal',
+                lua: 'Lua das Raízes',
+                signos: 'Touro, Capricórnio',
+                simbologia: 'Raízes Expostas, Árvore Seca, Semente Estéril, Vasos de Barro Quebrados',
+                utensilio: 'Vaso de Barro Rachado, Sementes Velhas, Enxada Enferrujada',
+                elemento: 'Raiz Podre & Ancestralidade Perdida',
+                mensagem: 'Suas raízes são túmulos de histórias! Pombagira da Figueira te conecta aos fantasmas familiares, onde cada nome na árvore genealógica é uma cruz no cemitério.'
+            }
+        };
+
+        // ==============================
+        // PERGUNTAS DO QUIZ
+        // ==============================
+        const questions = [
+            {
+                question: "Qual Pombagira é sincretizada com a Rainha de Sabá e Maria Madalena?",
+                options: ["Maria Mulambo", "Maria Padilha", "Sete Saias", "Pombagira Cigana"],
+                correct: "Maria Padilha",
+                pombagira: "Maria Padilha"
+            },
+            {
+                question: "Qual entidade tem como utensílio principal o espelho negro e a chave?",
+                options: ["Rosa Caveira", "Dama da Noite", "Maria Navalha", "Maria Farrapo"],
+                correct: "Dama da Noite",
+                pombagira: "Dama da Noite"
+            },
+            {
+                question: "Em que fase da lua Maria Mulambo atua com maior poder de cura?",
+                options: ["Lua Cheia", "Lua Nova", "Lua Minguante", "Lua Crescente"],
+                correct: "Lua Minguante",
+                pombagira: "Maria Mulambo"
+            },
+            {
+                question: "Qual Pombagira é invocada especificamente para batalhas espirituais e proteção guerreira?",
+                options: ["Maria Padilha", "Maria Quitéria", "Maria Navalha", "Rosa Caveira"],
+                correct: "Maria Quitéria",
+                pombagira: "Maria Quitéria"
+            },
+            {
+                question: "Que utensílio é característico de Rosa Caveira e simboliza transformação?",
+                options: ["Espada", "Foice", "Navalha", "Tridente"],
+                correct: "Foice",
+                pombagira: "Rosa Caveira"
+            },
+            {
+                question: "Qual é o dia propício para reverenciar a Pombagira Cigana?",
+                options: ["Segunda-feira", "Terça-feira", "Quarta-feira", "Sexta-feira"],
+                correct: "Quarta-feira",
+                pombagira: "Pombagira Cigana"
+            },
+            {
+                question: "Quantas saias usa a Pombagira da alegria e intensidade?",
+                options: ["Três", "Cinco", "Sete", "Nove"],
+                correct: "Sete",
+                pombagira: "Sete Saias"
+            },
+            {
+                question: "Qual Pombagira tem como locais de oferenda hospitais psiquiátricos e encruzilhadas silenciosas?",
+                options: ["Maria Mulambo", "Maria Farrapo", "Pombagira Menina", "Pombagira da Praia"],
+                correct: "Maria Farrapo",
+                pombagira: "Maria Farrapo"
+            },
+            {
+                question: "Que símbolos são associados à Pombagira da Praia?",
+                options: ["Caveira e rosa", "Concha e onda", "Navalha e dado", "Coroa e cetro"],
+                correct: "Concha e onda",
+                pombagira: "Pombagira da Praia"
+            },
+            {
+                question: "Qual entidade trabalha com a energia de renovação e inocência?",
+                options: ["Maria Mulambo", "Pombagira Menina", "Sete Saias", "Maria Farrapo"],
+                correct: "Pombagira Menina",
+                pombagira: "Pombagira Menina"
+            },
+            {
+                question: "Em que fase lunar a Dama da Noite atinge seu mistério máximo?",
+                options: ["Lua Cheia", "Lua Nova", "Lua Negra", "Lua Crescente"],
+                correct: "Lua Negra",
+                pombagira: "Dama da Noite"
+            },
+            {
+                question: "Qual Pombagira é associada aos signos de Touro e Capricórnio?",
+                options: ["Maria Padilha", "Pombagira Cigana", "Pombagira da Figueira", "Maria Quitéria"],
+                correct: "Pombagira da Figueira",
+                pombagira: "Pombagira da Figueira"
+            },
+            {
+                question: "Que cor NÃO é típica de Maria Navalha?",
+                options: ["Preto", "Vermelho", "Prata", "Dourado"],
+                correct: "Dourado",
+                pombagira: "Maria Navalha"
+            },
+            {
+                question: "Qual entidade tem como simbologia principal raízes, árvore e sementes?",
+                options: ["Maria Mulambo", "Pombagira da Figueira", "Maria Farrapo", "Pombagira da Praia"],
+                correct: "Pombagira da Figueira",
+                pombagira: "Pombagira da Figueira"
+            },
+            {
+                question: "Qual Pombagira trabalha especificamente com cemitérios e energia de justiça implacável?",
+                options: ["Dama da Noite", "Rosa Caveira", "Maria Quitéria", "Maria Navalha"],
+                correct: "Rosa Caveira",
+                pombagira: "Rosa Caveira"
+            }
+        ];
+
+        // ==============================
+        // FUNÇÕES AUXILIARES
+        // ==============================
+        function createPetals() {
+            const petalsContainer = document.getElementById('petals');
+            if (!petalsContainer) return;
+            
+            for (let i = 0; i < 15; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'rose-petal';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDelay = Math.random() * 20 + 's';
+                petal.style.animationDuration = (15 + Math.random() * 15) + 's';
+                petalsContainer.appendChild(petal);
+            }
+        }
+
+        // ==============================
+        // CLASSE PRINCIPAL DO QUIZ
+        // ==============================
+        class QuizApp {
+            constructor() {
+                this.currentQuestion = 0;
+                this.score = {};
+                this.showResult = false;
+                this.selectedAnswer = null;
+                this.isCorrect = null;
+                this.container = document.getElementById('quiz-app');
+                this.render();
+            }
+
+            playSound(correct) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = correct ? 220 : 110;
+                    osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.5);
+                } catch (e) {
+                    // Silenciar erro de áudio
+                }
+            }
+
+            handleAnswer(answer) {
+                const correct = answer === questions[this.currentQuestion].correct;
+                this.selectedAnswer = answer;
+                this.isCorrect = correct;
+                this.playSound(correct);
+
+                if (correct) {
+                    const pombagiraName = questions[this.currentQuestion].pombagira;
+                    this.score[pombagiraName] = (this.score[pombagiraName] || 0) + 1;
+                }
+
+                setTimeout(() => {
+                    if (this.currentQuestion < questions.length - 1) {
+                        this.currentQuestion++;
+                        this.selectedAnswer = null;
+                        this.isCorrect = null;
+                    } else {
+                        this.showResult = true;
+                    }
+                    this.render();
+                }, 1500);
+            }
+
+            getQueenPombagira() {
+                let maxScore = 0;
+                let queen = 'Maria Padilha';
+                Object.entries(this.score).forEach(([name, points]) => {
+                    if (points > maxScore) {
+                        maxScore = points;
+                        queen = name;
+                    }
+                });
+                return queen;
+            }
+
+            renderQuiz() {
+                const question = questions[this.currentQuestion];
+                return `
+                    <div class="max-w-4xl w-full">
+                        <div class="card rounded-xl shadow-2xl overflow-hidden smoke-effect">
+                            <div class="bg-gradient-to-r from-gray-900 to-black p-6 border-b border-red-900">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="candle"></div>
+                                        <span class="text-red-300 font-bold text-lg font-gothic">
+                                            ${this.currentQuestion + 1}/${questions.length}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-moon blood-red candle-flicker"></i>
+                                        <span class="text-gray-400 text-sm">Mistério das Giras</span>
+                                    </div>
+                                </div>
+                                <div class="bg-black/60 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-red-900 to-purple-900 h-full transition-all duration-700"
+                                         style="width: ${((this.currentQuestion + 1) / questions.length) * 100}%">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 md:p-8 vintage-paper">
+                                <div class="bg-black/50 rounded-xl p-6 md:p-8 mb-8 blood-border">
+                                    <i class="fas fa-ankh dark-gold text-3xl mx-auto mb-4 block text-center"></i>
+                                    <h2 class="text-xl md:text-2xl font-bold text-gray-200 text-center leading-relaxed font-gothic">
+                                        ${question.question}
+                                    </h2>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    ${question.options.map((option, index) => {
+                                        let bgColor = 'option-btn';
+                                        let borderColor = 'border-gray-800';
+                                        let textColor = 'text-gray-300';
+
+                                        if (this.selectedAnswer === option) {
+                                            if (this.isCorrect) {
+                                                bgColor = 'bg-gradient-to-r from-green-900/80 to-emerald-900/80';
+                                                borderColor = 'border-green-800';
+                                                textColor = 'text-green-200';
+                                            } else {
+                                                bgColor = 'bg-gradient-to-r from-red-900/80 to-rose-900/80';
+                                                borderColor = 'border-red-800';
+                                                textColor = 'text-red-200';
+                                            }
+                                        }
+
+                                        if (this.selectedAnswer && option === question.correct && !this.isCorrect) {
+                                            bgColor = 'bg-gradient-to-r from-green-900/80 to-emerald-900/80';
+                                            borderColor = 'border-green-800';
+                                            textColor = 'text-green-200';
+                                        }
+
+                                        return `
+                                            <button onclick="quiz.handleAnswer('${option.replace(/'/g, "\\'")}')" 
+                                                    ${this.selectedAnswer ? 'disabled' : ''}
+                                                    class="${bgColor} ${borderColor} ${textColor} px-4 py-4 rounded-lg font-medium transition-all duration-300 shadow-lg disabled:cursor-not-allowed relative z-10">
+                                                <div class="flex items-center justify-between">
+                                                    <span>${option}</span>
+                                                    <i class="fas fa-question-circle opacity-50"></i>
+                                                </div>
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+
+                                ${this.selectedAnswer ? `
+                                    <div class="mt-8 text-center">
+                                        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-lg ${this.isCorrect ? 'bg-green-900/40 border-green-700' : 'bg-red-900/40 border-red-700'} border">
+                                            ${this.isCorrect ? 
+                                                '<i class="fas fa-skull-crossbones text-green-400"></i><span class="text-green-300 font-bold font-gothic">VERDADE REVELADA</span>' : 
+                                                '<i class="fas fa-tombstone-alt text-red-400"></i><span class="text-red-300 font-bold font-gothic">ENIGMA PERDIDO</span>'
+                                            }
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-gray-500 text-sm font-medium flex items-center justify-center gap-2">
+                                <i class="fas fa-crow"></i>
+                                <span class="font-gothic">Descubra qual Pombagira reina em seu caminho sombrio</span>
+                                <i class="fas fa-ghost"></i>
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderResult() {
+                const queen = this.getQueenPombagira();
+                const queenData = pombagiras[queen];
+                const totalCorrect = Object.values(this.score).reduce((a, b) => a + b, 0);
+
+                return `
+                    <div class="max-w-4xl w-full">
+                        <div class="card rounded-xl shadow-2xl overflow-hidden">
+                            <div class="bg-gradient-to-b from-black to-gray-900 p-6 md:p-10">
+                                <div class="text-center mb-8">
+                                    <i class="fas fa-crown dark-gold text-4xl md:text-5xl mx-auto mb-4 animate-pulse"></i>
+                                    <h1 class="text-3xl md:text-4xl font-bold dark-gold mb-2 gothic-title font-gothic">
+                                        SUA POMBAGIRA RAINHA
+                                    </h1>
+                                    <p class="text-gray-400 text-lg font-gothic">
+                                        Você desvendou ${totalCorrect} de 15 mistérios
+                                    </p>
+                                </div>
+                                
+                                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                    <div class="bg-black/70 rounded-xl p-6 blood-border">
+                                        <img src="${queenData.image}" 
+                                             alt="${queen}"
+                                             class="w-full h-64 object-contain mb-4 grayscale hover:grayscale-0 transition-all duration-500">
+                                        <h2 class="text-2xl font-bold text-center blood-red mb-2 font-gothic">
+                                            ${queen}
+                                        </h2>
+                                        <p class="text-center dark-gold text-lg font-gothic">
+                                            ${queenData.elemento}
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="bg-black/60 rounded-lg p-4 purple-glow">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <i class="fas fa-palette velvet-purple"></i>
+                                                <span class="dark-gold font-bold font-gothic">CORES</span>
+                                            </div>
+                                            <p class="text-gray-300 pl-8">${queenData.cores}</p>
+                                        </div>
+
+                                        <div class="bg-black/60 rounded-lg p-4 purple-glow">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <i class="fas fa-moon blood-red"></i>
+                                                <span class="dark-gold font-bold font-gothic">LUA & DIA</span>
+                                            </div>
+                                            <p class="text-gray-300 pl-8">${queenData.lua} • ${queenData.dia}</p>
+                                        </div>
+
+                                        <div class="bg-black/60 rounded-lg p-4 purple-glow">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <i class="fas fa-star dark-gold"></i>
+                                                <span class="dark-gold font-bold font-gothic">SIGNOS</span>
+                                            </div>
+                                            <p class="text-gray-300 pl-8">${queenData.signos}</p>
+                                        </div>
+
+                                        <div class="bg-black/60 rounded-lg p-4 purple-glow">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <i class="fas fa-ankh dark-gold"></i>
+                                                <span class="dark-gold font-bold font-gothic">SIMBOLOGIA</span>
+                                            </div>
+                                            <p class="text-gray-300 pl-8">${queenData.simbologia}</p>
+                                        </div>
+
+                                        <div class="bg-black/60 rounded-lg p-4 purple-glow">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <i class="fas fa-skull-crossbones blood-red"></i>
+                                                <span class="dark-gold font-bold font-gothic">UTENSÍLIOS</span>
+                                            </div>
+                                            <p class="text-gray-300 pl-8">${queenData.utensilio}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gradient-to-r from-black/80 to-gray-900/80 rounded-xl p-6 blood-border mb-6">
+                                    <i class="fas fa-book-dead blood-red text-2xl mx-auto mb-4 block text-center"></i>
+                                    <p class="text-gray-300 text-center leading-relaxed italic font-gothic">
+                                        ${queenData.mensagem}
+                                    </p>
+                                </div>
+
+                                <div class="text-center">
+                                    <button onclick="quiz.reset()"
+                                            class="bg-gradient-to-r from-black to-gray-900 blood-red border border-red-900 text-gray-200 px-8 py-3 rounded-lg font-bold hover:from-red-900 hover:to-black transition-all duration-300 shadow-lg font-gothic">
+                                        <i class="fas fa-redo mr-2"></i>Reiniciar Ritual
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            reset() {
+                this.currentQuestion = 0;
+                this.score = {};
+                this.showResult = false;
+                this.selectedAnswer = null;
+                this.isCorrect = null;
+                this.render();
+            }
+
+            render() {
+                if (this.container) {
+                    this.container.innerHTML = this.showResult ? this.renderResult() : this.renderQuiz();
+                }
+            }
+        }
+
+        // ==============================
+        // INICIALIZAÇÃO
+        // ==============================
+        window.onload = async function() {
+            createPetals();
+            await updateViewCounter();
+            
+            // Pequeno delay para mostrar a tela de loading
+            setTimeout(() => {
+                window.quiz = new QuizApp();
+            }, 800);
+        };
+    </script>
+</body>
+</html>
