@@ -260,7 +260,6 @@
             pointer-events: none;
         }
         
-        /* Contador de Visitas */
         .view-counter {
             position: fixed;
             bottom: 15px;
@@ -318,7 +317,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Loading State */
         .loading-screen {
             min-height: 100vh;
             display: flex;
@@ -350,7 +348,6 @@
             animation: flame 2s infinite alternate;
         }
         
-        /* Efeito de transição entre perguntas */
         .question-transition {
             animation: slideOut 0.5s ease-out forwards;
         }
@@ -369,7 +366,6 @@
             100% { transform: translateX(0); opacity: 1; }
         }
         
-        /* Feedback de resposta */
         .feedback-correct {
             animation: correctFeedback 1.5s ease-out;
         }
@@ -390,7 +386,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
         
-        /* Progress bar melhorada */
         .progress-bar-container {
             position: relative;
             height: 8px;
@@ -414,7 +409,6 @@
             100% { background-position: -200% 0; }
         }
         
-        /* Barra de rolagem personalizada */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -433,7 +427,6 @@
             background: linear-gradient(to bottom, #ff0000, #8b0000);
         }
         
-        /* Container principal sem overflow */
         .quiz-container {
             max-width: 100vw;
             overflow: hidden;
@@ -442,16 +435,13 @@
     </style>
 </head>
 <body class="text-gray-300">
-    <!-- Pétalas de rosa caindo -->
     <div id="petals"></div>
     
-    <!-- Crânios decorativos -->
     <div class="skull-decoration top-10 left-10"><i class="fas fa-skull"></i></div>
     <div class="skull-decoration top-10 right-10"><i class="fas fa-skull"></i></div>
     <div class="skull-decoration bottom-10 left-10"><i class="fas fa-skull"></i></div>
     <div class="skull-decoration bottom-10 right-10"><i class="fas fa-skull"></i></div>
     
-    <!-- Contador de Visitas -->
     <div class="view-counter">
         <div class="view-counter-content">
             <div class="view-counter-text">
@@ -465,7 +455,6 @@
     </div>
     
     <div id="quiz-app" class="min-h-screen flex items-center justify-center p-4 relative z-10">
-        <!-- Tela de loading -->
         <div class="loading-screen">
             <div class="loading-candle"></div>
             <h2 class="font-gothic text-xl mb-2">Iniciando Ritual...</h2>
@@ -474,16 +463,10 @@
     </div>
 
     <script>
-        // ==============================
-        // CONFIGURAÇÕES DO CONTADOR
-        // ==============================
         const SUPABASE_URL = 'https://rbygxkbewzknvjjhxdvw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY';
         const PAGE_NAME = 'quiz-pombagira-gotico';
         
-        // ==============================
-        // FUNÇÃO DO CONTADOR SIMPLIFICADA
-        // ==============================
         async function updateViewCounter() {
             try {
                 let localCount = localStorage.getItem('quiz_pombagira_views');
@@ -558,9 +541,6 @@
             }
         }
 
-        // ==============================
-        // DADOS DAS POMBAGIRAS
-        // ==============================
         const pombagiras = {
             'Maria Padilha': {
                 image: 'https://raw.githubusercontent.com/alexialuzdeferro/misterio-das-giras/refs/heads/main/maria_padilha.png',
@@ -696,9 +676,6 @@
             }
         };
 
-        // ==============================
-        // PERGUNTAS DO QUIZ
-        // ==============================
         const questions = [
             {
                 question: "Qual Pombagira é sincretizada com a Rainha de Sabá e Maria Madalena?",
@@ -792,9 +769,6 @@
             }
         ];
 
-        // ==============================
-        // FUNÇÕES AUXILIARES
-        // ==============================
         function createPetals() {
             const petalsContainer = document.getElementById('petals');
             if (!petalsContainer) return;
@@ -809,9 +783,6 @@
             }
         }
 
-        // ==============================
-        // CLASSE PRINCIPAL DO QUIZ
-        // ==============================
         class QuizApp {
             constructor() {
                 this.currentQuestion = 0;
@@ -831,15 +802,13 @@
                     const gain = ctx.createGain();
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.frequency.value = correct ? 523.25 : 261.63; // Notas musicais
+                    osc.frequency.value = correct ? 523.25 : 261.63;
                     osc.type = 'sine';
                     gain.gain.setValueAtTime(0.2, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
                     osc.start(ctx.currentTime);
                     osc.stop(ctx.currentTime + 0.5);
-                } catch (e) {
-                    // Silenciar erro de áudio
-                }
+                } catch (e) {}
             }
 
             handleAnswer(answer) {
@@ -851,7 +820,6 @@
                 this.isCorrect = correct;
                 this.playSound(correct);
 
-                // Atualizar cores dos botões imediatamente
                 this.updateButtonColors(answer, correct);
 
                 if (correct) {
@@ -859,7 +827,6 @@
                     this.score[pombagiraName] = (this.score[pombagiraName] || 0) + 1;
                 }
 
-                // Mostrar feedback visual
                 this.showFeedback(correct);
 
                 setTimeout(() => {
@@ -881,7 +848,6 @@
                     const buttonText = button.textContent.trim();
                     button.disabled = true;
                     
-                    // Reset classes
                     button.classList.remove('correct', 'incorrect', 'correct-answer');
                     
                     if (buttonText === selectedAnswer) {
@@ -892,7 +858,6 @@
                         }
                     }
                     
-                    // Mostrar resposta correta se o usuário errou
                     if (!isCorrect && buttonText === correctAnswer) {
                         button.classList.add('correct-answer');
                     }
@@ -923,7 +888,6 @@
                 
                 document.body.appendChild(feedbackElement);
                 
-                // Remover feedback após 1 segundo
                 setTimeout(() => {
                     if (feedbackElement.parentNode) {
                         feedbackElement.parentNode.removeChild(feedbackElement);
@@ -943,13 +907,10 @@
                     this.isCorrect = null;
                     this.isTransitioning = false;
                     
-                    // Atualizar progress bar
                     this.updateProgressBar();
                     
-                    // Renderizar nova pergunta com animação de entrada
                     this.render();
                     
-                    // Adicionar classe de entrada
                     setTimeout(() => {
                         const newQuizContent = document.querySelector('.quiz-content');
                         if (newQuizContent) {
@@ -995,8 +956,8 @@
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <i class="fas fa-moon blood-red candle-flicker"></i>
-                                        <span class="text-gray-400 text-sm font-gothic">Ritual Gótico</span>
+                                        <i class="fas fa-heart blood-red candle-flicker"></i>
+                                        <span class="text-gray-400 text-sm font-gothic">SUA MOÇA</span>
                                     </div>
                                 </div>
                                 <div class="progress-bar-container">
@@ -1164,7 +1125,6 @@
                 if (this.container) {
                     this.container.innerHTML = this.showResult ? this.renderResult() : this.renderQuiz();
                     
-                    // Inicializar progress bar
                     if (!this.showResult) {
                         this.updateProgressBar();
                     }
@@ -1172,14 +1132,10 @@
             }
         }
 
-        // ==============================
-        // INICIALIZAÇÃO
-        // ==============================
         window.onload = async function() {
             createPetals();
             await updateViewCounter();
             
-            // Pequeno delay para mostrar a tela de loading
             setTimeout(() => {
                 window.quiz = new QuizApp();
             }, 800);
